@@ -1,0 +1,2105 @@
+{
+  "$defs": {
+    "Assertion": {
+      "additionalProperties": false,
+      "description": "One reported value for a claim, with where it came from.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "hand_summary",
+            "hand_entry",
+            "document",
+            "extraction"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "source",
+        "kind"
+      ],
+      "title": "Assertion",
+      "type": "object"
+    },
+    "BillClaim": {
+      "additionalProperties": false,
+      "description": "Any other bill to pay and keep proof of (insurance premium, HOA \u2026).",
+      "properties": {
+        "amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Amount"
+        },
+        "assertions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Assertion"
+          },
+          "title": "Assertions",
+          "type": "array"
+        },
+        "category": {
+          "const": "bill",
+          "title": "Category",
+          "type": "string"
+        },
+        "currency": {
+          "default": "USD",
+          "title": "Currency",
+          "type": "string"
+        },
+        "date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Date"
+        },
+        "entered_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entered At"
+        },
+        "entered_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entered By"
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Link"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^\\d{4}/[a-z0-9]+(?:-[a-z0-9]+)*/[a-z0-9][a-z0-9.-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "plan": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PaymentPlan"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "provenance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provenance"
+        },
+        "requirements": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Requirement"
+          },
+          "title": "Requirements",
+          "type": "array"
+        },
+        "resolved": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Resolution"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "default": "entered",
+          "enum": [
+            "draft",
+            "entered",
+            "evidence_requested",
+            "evidenced",
+            "verified",
+            "waived"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "taxpayer": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Taxpayer"
+        },
+        "year": {
+          "title": "Year",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "year",
+        "category"
+      ],
+      "title": "BillClaim",
+      "type": "object"
+    },
+    "DonationClaim": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Amount"
+        },
+        "assertions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Assertion"
+          },
+          "title": "Assertions",
+          "type": "array"
+        },
+        "category": {
+          "const": "donation",
+          "title": "Category",
+          "type": "string"
+        },
+        "currency": {
+          "default": "USD",
+          "title": "Currency",
+          "type": "string"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "donation": {
+          "$ref": "#/$defs/DonationDetails"
+        },
+        "entered_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entered At"
+        },
+        "entered_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entered By"
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Link"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^\\d{4}/[a-z0-9]+(?:-[a-z0-9]+)*/[a-z0-9][a-z0-9.-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "payee": {
+          "title": "Payee",
+          "type": "string"
+        },
+        "payee_ein": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Payee Ein"
+        },
+        "plan": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PaymentPlan"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "provenance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provenance"
+        },
+        "requirements": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Requirement"
+          },
+          "title": "Requirements",
+          "type": "array"
+        },
+        "resolved": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Resolution"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "default": "entered",
+          "enum": [
+            "draft",
+            "entered",
+            "evidence_requested",
+            "evidenced",
+            "verified",
+            "waived"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "taxpayer": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Taxpayer"
+        },
+        "year": {
+          "title": "Year",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "year",
+        "category",
+        "date",
+        "amount",
+        "payee",
+        "donation"
+      ],
+      "title": "DonationClaim",
+      "type": "object"
+    },
+    "DonationDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "acquired": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Acquired"
+        },
+        "cost_basis_per_share": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cost Basis Per Share"
+        },
+        "fmv_method": {
+          "anyOf": [
+            {
+              "enum": [
+                "high_low_average",
+                "close"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fmv Method"
+        },
+        "holding_period": {
+          "anyOf": [
+            {
+              "enum": [
+                "short_term",
+                "long_term"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Holding Period"
+        },
+        "method": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "quid_pro_quo": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quid Pro Quo"
+        },
+        "security": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Security"
+        },
+        "shares": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shares"
+        },
+        "to_daf": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "To Daf"
+        },
+        "type": {
+          "enum": [
+            "cash",
+            "securities",
+            "property",
+            "daf_grant"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "DonationDetails",
+      "type": "object"
+    },
+    "EstimateClaim": {
+      "additionalProperties": false,
+      "description": "Projection, not evidence-bearing.",
+      "properties": {
+        "amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Amount"
+        },
+        "assertions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Assertion"
+          },
+          "title": "Assertions",
+          "type": "array"
+        },
+        "category": {
+          "const": "estimate",
+          "title": "Category",
+          "type": "string"
+        },
+        "currency": {
+          "default": "USD",
+          "title": "Currency",
+          "type": "string"
+        },
+        "date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Date"
+        },
+        "dividends_interest": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dividends Interest"
+        },
+        "entered_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entered At"
+        },
+        "entered_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entered By"
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Link"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^\\d{4}/[a-z0-9]+(?:-[a-z0-9]+)*/[a-z0-9][a-z0-9.-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "long_term": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Long Term"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "plan": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PaymentPlan"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "provenance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provenance"
+        },
+        "reconcile_against": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reconcile Against"
+        },
+        "requirements": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Requirement"
+          },
+          "title": "Requirements",
+          "type": "array"
+        },
+        "resolved": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Resolution"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "short_term": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Short Term"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source"
+        },
+        "status": {
+          "default": "entered",
+          "enum": [
+            "draft",
+            "entered",
+            "evidence_requested",
+            "evidenced",
+            "verified",
+            "waived"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "taxpayer": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Taxpayer"
+        },
+        "year": {
+          "title": "Year",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "year",
+        "category"
+      ],
+      "title": "EstimateClaim",
+      "type": "object"
+    },
+    "FbarClaim": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Amount"
+        },
+        "assertions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Assertion"
+          },
+          "title": "Assertions",
+          "type": "array"
+        },
+        "category": {
+          "const": "fbar",
+          "title": "Category",
+          "type": "string"
+        },
+        "currency": {
+          "default": "USD",
+          "title": "Currency",
+          "type": "string"
+        },
+        "date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Date"
+        },
+        "entered_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entered At"
+        },
+        "entered_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entered By"
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Link"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "foreign_account": {
+          "$ref": "#/$defs/ForeignAccount"
+        },
+        "id": {
+          "pattern": "^\\d{4}/[a-z0-9]+(?:-[a-z0-9]+)*/[a-z0-9][a-z0-9.-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "plan": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PaymentPlan"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "provenance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provenance"
+        },
+        "requirements": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Requirement"
+          },
+          "title": "Requirements",
+          "type": "array"
+        },
+        "resolved": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Resolution"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "default": "entered",
+          "enum": [
+            "draft",
+            "entered",
+            "evidence_requested",
+            "evidenced",
+            "verified",
+            "waived"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "taxpayer": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Taxpayer"
+        },
+        "year": {
+          "title": "Year",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "year",
+        "category",
+        "foreign_account"
+      ],
+      "title": "FbarClaim",
+      "type": "object"
+    },
+    "ForeignAccount": {
+      "additionalProperties": false,
+      "properties": {
+        "currency": {
+          "title": "Currency",
+          "type": "string"
+        },
+        "interest": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Interest"
+        },
+        "max_balance": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Max Balance"
+        },
+        "rate": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Year-end Treasury rate, units per USD",
+          "title": "Rate"
+        },
+        "source": {
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+          "title": "Source",
+          "type": "string"
+        },
+        "usd_value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Usd Value"
+        },
+        "withholding": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Withholding"
+        }
+      },
+      "required": [
+        "source",
+        "currency",
+        "max_balance"
+      ],
+      "title": "ForeignAccount",
+      "type": "object"
+    },
+    "Link": {
+      "additionalProperties": false,
+      "description": "Evidence link, stored on the side that needs evidence (\u00a74.4).",
+      "properties": {
+        "doc": {
+          "pattern": "^doc_[0-9a-f]{12}$",
+          "title": "Doc",
+          "type": "string"
+        },
+        "linked_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "format": "date",
+              "type": "string"
+            }
+          ],
+          "title": "Linked At"
+        },
+        "linked_by": {
+          "description": "`<user>` or `auto:<component>`",
+          "title": "Linked By",
+          "type": "string"
+        },
+        "role": {
+          "default": "primary",
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "doc",
+        "linked_at",
+        "linked_by"
+      ],
+      "title": "Link",
+      "type": "object"
+    },
+    "Parcel": {
+      "additionalProperties": false,
+      "properties": {
+        "county": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "County"
+        },
+        "installment": {
+          "anyOf": [
+            {
+              "enum": [
+                "first",
+                "second",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Installment"
+        },
+        "parcel_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parcel Number"
+        }
+      },
+      "title": "Parcel",
+      "type": "object"
+    },
+    "PaymentClaim": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Amount"
+        },
+        "assertions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Assertion"
+          },
+          "title": "Assertions",
+          "type": "array"
+        },
+        "category": {
+          "const": "tax_payment",
+          "title": "Category",
+          "type": "string"
+        },
+        "currency": {
+          "default": "USD",
+          "title": "Currency",
+          "type": "string"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "entered_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entered At"
+        },
+        "entered_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entered By"
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Link"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^\\d{4}/[a-z0-9]+(?:-[a-z0-9]+)*/[a-z0-9][a-z0-9.-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "jurisdiction": {
+          "description": "federal | CA | IL | \u2026",
+          "title": "Jurisdiction",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "payment": {
+          "$ref": "#/$defs/PaymentDetails"
+        },
+        "plan": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PaymentPlan"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "provenance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provenance"
+        },
+        "requirements": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Requirement"
+          },
+          "title": "Requirements",
+          "type": "array"
+        },
+        "resolved": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Resolution"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "default": "entered",
+          "enum": [
+            "draft",
+            "entered",
+            "evidence_requested",
+            "evidenced",
+            "verified",
+            "waived"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "taxpayer": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Taxpayer"
+        },
+        "year": {
+          "title": "Year",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "year",
+        "category",
+        "date",
+        "amount",
+        "jurisdiction",
+        "payment"
+      ],
+      "title": "PaymentClaim",
+      "type": "object"
+    },
+    "PaymentDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "applied_to_year": {
+          "title": "Applied To Year",
+          "type": "integer"
+        },
+        "channel": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Channel"
+        },
+        "confirmation_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confirmation Number"
+        },
+        "kind": {
+          "enum": [
+            "estimated_q1",
+            "estimated_q2",
+            "estimated_q3",
+            "estimated_q4",
+            "extension",
+            "balance_due"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "applied_to_year"
+      ],
+      "title": "PaymentDetails",
+      "type": "object"
+    },
+    "PaymentPlan": {
+      "additionalProperties": false,
+      "description": "A payment that hasn't happened yet: due, maybe scheduled with the bank or payee (\u00a75.5).\n\nPlanned and scheduled payments are not payments: the checks that total payments ignore them\nuntil they are marked paid. TaxBinder never moves money; this is the plan and the reminder.",
+      "properties": {
+        "due": {
+          "format": "date",
+          "title": "Due",
+          "type": "string"
+        },
+        "label": {
+          "default": "",
+          "title": "Label",
+          "type": "string"
+        },
+        "note": {
+          "default": "",
+          "title": "Note",
+          "type": "string"
+        },
+        "pay_on": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pay On"
+        },
+        "payee": {
+          "default": "",
+          "title": "Payee",
+          "type": "string"
+        },
+        "state": {
+          "default": "planned",
+          "enum": [
+            "planned",
+            "scheduled",
+            "paid"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "due"
+      ],
+      "title": "PaymentPlan",
+      "type": "object"
+    },
+    "PropertyTaxClaim": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Amount"
+        },
+        "assertions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Assertion"
+          },
+          "title": "Assertions",
+          "type": "array"
+        },
+        "category": {
+          "const": "property_tax",
+          "title": "Category",
+          "type": "string"
+        },
+        "currency": {
+          "default": "USD",
+          "title": "Currency",
+          "type": "string"
+        },
+        "date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Date"
+        },
+        "entered_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entered At"
+        },
+        "entered_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entered By"
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Link"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^\\d{4}/[a-z0-9]+(?:-[a-z0-9]+)*/[a-z0-9][a-z0-9.-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "parcel": {
+          "$ref": "#/$defs/Parcel"
+        },
+        "plan": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PaymentPlan"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "provenance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provenance"
+        },
+        "requirements": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Requirement"
+          },
+          "title": "Requirements",
+          "type": "array"
+        },
+        "resolved": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Resolution"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "default": "entered",
+          "enum": [
+            "draft",
+            "entered",
+            "evidence_requested",
+            "evidenced",
+            "verified",
+            "waived"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "taxpayer": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Taxpayer"
+        },
+        "year": {
+          "title": "Year",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "year",
+        "category",
+        "parcel"
+      ],
+      "title": "PropertyTaxClaim",
+      "type": "object"
+    },
+    "Requirement": {
+      "additionalProperties": false,
+      "description": "Evidence a rule demands for a claim; computed by rules, not typed by hand (\u00a78).",
+      "properties": {
+        "accepts": {
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "enum": [
+                  "w2",
+                  "1099_composite",
+                  "1099_int",
+                  "1099_div",
+                  "1099_q",
+                  "1099_r",
+                  "1099_misc",
+                  "1099_nec",
+                  "ssa_1099",
+                  "1098",
+                  "5498",
+                  "5498_sa",
+                  "k1_1065",
+                  "k1_state",
+                  "k1_1120s",
+                  "k1_1041",
+                  "donation_ack",
+                  "form_8283_support",
+                  "payment_confirmation",
+                  "property_tax_bill",
+                  "vehicle_registration",
+                  "account_change_notice",
+                  "foreign_bank_statement",
+                  "fbar_filing",
+                  "tax_return",
+                  "return_paper"
+                ],
+                "type": "string"
+              },
+              {
+                "pattern": "^x-[a-z0-9]+(?:-[a-z0-9]+)*$",
+                "type": "string"
+              }
+            ]
+          },
+          "title": "Accepts",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "rule": {
+          "pattern": "^R-[A-Z]+-\\d{2}$",
+          "title": "Rule",
+          "type": "string"
+        },
+        "satisfied_by": {
+          "anyOf": [
+            {
+              "pattern": "^doc_[0-9a-f]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Satisfied By"
+        },
+        "waived": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Waiver"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "rule"
+      ],
+      "title": "Requirement",
+      "type": "object"
+    },
+    "Resolution": {
+      "additionalProperties": false,
+      "description": "Which assertion wins. Must cite evidence (`basis`) or explain in `note`.",
+      "properties": {
+        "at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "format": "date",
+              "type": "string"
+            }
+          ],
+          "title": "At"
+        },
+        "basis": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Basis"
+        },
+        "by": {
+          "title": "By",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "by",
+        "at"
+      ],
+      "title": "Resolution",
+      "type": "object"
+    },
+    "Vehicle": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "vlf": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Deductible vehicle license fee portion",
+          "title": "Vlf"
+        }
+      },
+      "required": [
+        "description"
+      ],
+      "title": "Vehicle",
+      "type": "object"
+    },
+    "VehicleFeeClaim": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Amount"
+        },
+        "assertions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Assertion"
+          },
+          "title": "Assertions",
+          "type": "array"
+        },
+        "category": {
+          "const": "vehicle_fee",
+          "title": "Category",
+          "type": "string"
+        },
+        "currency": {
+          "default": "USD",
+          "title": "Currency",
+          "type": "string"
+        },
+        "date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Date"
+        },
+        "entered_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entered At"
+        },
+        "entered_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entered By"
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Link"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^\\d{4}/[a-z0-9]+(?:-[a-z0-9]+)*/[a-z0-9][a-z0-9.-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "plan": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PaymentPlan"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "provenance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provenance"
+        },
+        "requirements": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Requirement"
+          },
+          "title": "Requirements",
+          "type": "array"
+        },
+        "resolved": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Resolution"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "default": "entered",
+          "enum": [
+            "draft",
+            "entered",
+            "evidence_requested",
+            "evidenced",
+            "verified",
+            "waived"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "taxpayer": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Taxpayer"
+        },
+        "vehicle": {
+          "$ref": "#/$defs/Vehicle"
+        },
+        "year": {
+          "title": "Year",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "year",
+        "category",
+        "vehicle"
+      ],
+      "title": "VehicleFeeClaim",
+      "type": "object"
+    },
+    "Waiver": {
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "format": "date",
+              "type": "string"
+            }
+          ],
+          "title": "At"
+        },
+        "by": {
+          "title": "By",
+          "type": "string"
+        },
+        "note": {
+          "title": "Note",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason",
+        "note",
+        "by",
+        "at"
+      ],
+      "title": "Waiver",
+      "type": "object"
+    }
+  },
+  "discriminator": {
+    "mapping": {
+      "bill": "#/$defs/BillClaim",
+      "donation": "#/$defs/DonationClaim",
+      "estimate": "#/$defs/EstimateClaim",
+      "fbar": "#/$defs/FbarClaim",
+      "property_tax": "#/$defs/PropertyTaxClaim",
+      "tax_payment": "#/$defs/PaymentClaim",
+      "vehicle_fee": "#/$defs/VehicleFeeClaim"
+    },
+    "propertyName": "category"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/DonationClaim"
+    },
+    {
+      "$ref": "#/$defs/PaymentClaim"
+    },
+    {
+      "$ref": "#/$defs/EstimateClaim"
+    },
+    {
+      "$ref": "#/$defs/PropertyTaxClaim"
+    },
+    {
+      "$ref": "#/$defs/VehicleFeeClaim"
+    },
+    {
+      "$ref": "#/$defs/FbarClaim"
+    },
+    {
+      "$ref": "#/$defs/BillClaim"
+    }
+  ],
+  "title": "Claim"
+}

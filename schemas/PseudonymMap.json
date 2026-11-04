@@ -1,0 +1,45 @@
+{
+  "$defs": {
+    "Placeholder": {
+      "additionalProperties": false,
+      "properties": {
+        "secret": {
+          "description": "The real value (normalised); encrypted in the vault",
+          "title": "Secret",
+          "type": "string"
+        },
+        "token": {
+          "pattern": "^[A-Z]+_\\d{2,}$",
+          "title": "Token",
+          "type": "string"
+        }
+      },
+      "required": [
+        "token",
+        "secret"
+      ],
+      "title": "Placeholder",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "`registry/pseudonyms.yaml`: each real value always gets the same placeholder, in every\ndocument and year (\u00a79.3). Never exported.",
+  "properties": {
+    "entries": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Placeholder"
+      },
+      "title": "Entries",
+      "type": "array"
+    },
+    "id": {
+      "const": "pseudonyms",
+      "default": "pseudonyms",
+      "title": "Id",
+      "type": "string"
+    }
+  },
+  "title": "PseudonymMap",
+  "type": "object"
+}

@@ -1,0 +1,25 @@
+# §5.2a (encrypted values are placeholders)
+id: tidemark.trust-2291
+institution: tidemark
+name: Grantor Trust brokerage
+owner: grantor-trust
+identifiers:
+  - number: ENC[age:PLACEHOLDER]
+    hint: "…2291"
+    kind: legacy
+    issuer: tidemark
+    effective_from: 2019-03-01
+    effective_to: 2026-05-15
+    note: "Retired in Brackley Wealth platform migration"
+  - number: ENC[age:PLACEHOLDER]
+    hint: "…4471"
+    kind: primary
+    issuer: brackley-wealth
+    effective_from: 2026-05-16
+    effective_to: null
+    source_doc: doc_91c0d2e5aa13
+  - number: ENC[age:PLACEHOLDER]
+    hint: "…2207"
+    kind: alternate
+    issuer: tidemark
+    note: "Appears on consolidated 1099 header"

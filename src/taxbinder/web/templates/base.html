@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}TaxBinder{% endblock %}</title>
+<link rel="stylesheet" href="/static/app.css">
+{% block styles %}{% endblock %}
+</head>
+<body{% block body_class %}{% endblock %} data-remote="{{ 'true' if remote else 'false' }}" data-app="{{ 'true' if in_app else 'false' }}">
+<a class="skip-link" href="#page">Skip to the page</a>
+{% include "_bar.html" %}
+<main class="page" id="page" tabindex="-1">
+  {% include "_demo.html" %}
+  {% block main %}{% endblock %}
+</main>
+<div class="scrim" id="viewer" hidden>
+  <div class="viewer" role="region" aria-labelledby="vw-title">
+    <header><h2 id="vw-title">Document</h2><span class="row"><button class="link small" type="button" id="vw-wide" aria-pressed="false">Wider</button><button class="x" type="button" id="vw-close" aria-label="Close">✕</button></span></header>
+    <div class="vw-pages" id="vw-pages" tabindex="0" aria-label="Pages"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script src="/static/bar.js"></script>
+<script src="/static/app.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

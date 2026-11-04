@@ -1,0 +1,33 @@
+# Rule parameters for tax year 2025 (§8.1a). Findings record this file's hash.
+# Federal dates only: a state's come from rules/states.yaml. Set reviewed_by/at once a person
+# has checked this file against the IRS's own schedules.
+reviewed_by: preparer
+reviewed_at: 2026-09-30
+source_notes: "IRS Form 1040-ES"
+
+R-EXP-01:
+  days: [21, 7]                   # reminders before the filing deadline
+  deadline: 2026-04-15
+  extended_deadline: 2026-10-15   # used when year.yaml says extension_filed
+R-EXP-02: { days: 3 }             # received but not vaulted
+R-EXP-05: { days: 7, season_start: 2026-01-15 }
+R-SRC-06: { lookback_days: 365 }
+
+R-DON-01: { cash_ack_threshold: 250 }
+R-DON-02: { form_8283_threshold: 500, appraisal_threshold: 5000 }
+R-DON-04: { tolerance: 1 }
+R-DON-06: { long_term_days: 365 }
+R-DON-07: { quid_pro_quo_threshold: 75 }
+R-DON-10: { tolerance: 1 }
+
+R-PAY-01: { tolerance: 1 }
+R-PAY-03:
+  due:
+    federal: [2025-04-15, 2025-06-16, 2025-09-15, 2026-01-15]
+  quarters:                       # which estimated_qN each due date is
+    federal: [1, 2, 3, 4]
+
+R-CON-01: { tolerance: 1 }
+R-CON-03: { days: 3 }
+
+R-FOR-01: { fbar_aggregate_threshold: 10000, treasury_rate_default: null }

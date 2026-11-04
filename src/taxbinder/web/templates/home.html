@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Your binder{% endblock %}
+{% macro summary(s) %}{{ s.got }} in the binder{% if s.to_come %} · {{ s.to_come }} to come{% endif %}{% if s.missing %} · {{ s.missing }} missing{% endif %}{% endmacro %}
+{% macro note(n) %}<div class="note">
+  <p>{{ n.text }}</p>
+  {% for id, name, docs in n.names %}<div class="same">
+    <b>{{ name }}</b>
+    <ul>{% for doc, what in docs[:3] %}<li>{{ what }} <button type="button" class="link" data-view="{{ doc }}" aria-label="View {{ what }} from {{ name }}">View</button></li>{% else %}<li class="muted">No documents</li>{% endfor %}{% if docs|length > 3 %}<li class="muted">and {{ docs|length - 3 }} more</li>{% endif %}</ul>
+    <button type="button" class="btn small" data-notice="{{ n.id }}" data-action="keep:{{ id }}">Keep this name, join the others</button>
+  </div>{% endfor %}
+  <div class="row wrap">{% for label, action in n.actions %}<button type="button" class="btn small{{ ' ghost' if n.names or not loop.first }}" data-notice="{{ n.id }}" data-action="{{ action }}">{{ label }}</button>{% endfor %}
+    {% if n.id.startswith('gap:') %}{% set parts = n.id.split(':') %}<button type="button" class="link" data-show="{{ parts[1] }}|{{ parts[2] }}">Show me ›</button>{% endif %}</div>
+</div>{% endmacro %}
+{% block main %}
+<div class="head">
+  <div><small>{{ entity.name }} · {{ entity_desc }}</small><h1>Your binder</h1></div>
+  <div class="row wrap">
+    {% if next_year %}<button type="button" class="btn ghost" id="newyear">Start {{ next_year }}</button>{% endif %}
+    {% if earlier %}<button type="button" class="btn ghost" id="earlieryear">An earlier year</button>{% endif %}
+    {% include "_help.html" %}
+  </div>
+</div>
+{% include "_years.html" %}
+{% if not cards|selectattr('rows')|list %}
+<section class="panel">
+  <h2>Nothing in your binder yet</h2>
+  <p class="muted">Once a year has its checklist, every document expected shows here. <a href="/add">Add documents</a> to start, or say what to expect.</p>
+  <button type="button" class="btn ghost expect" data-year="{{ front_year }}" title="A document you’re waiting for: it shows as to come until it arrives">＋ Add to this year’s list</button>
+</section>
+{% else %}
+<div class="wrap">
+  <div class="deck-box">
+    <div class="deck" id="deck" data-front="{{ front_year }}" data-count="{{ cards|length }}">
+      {% for c in cards %}
+      <section class="card{{ ' front' if c.front }}" data-year="{{ c.year }}" data-slot="{{ loop.index0 }}" aria-labelledby="t-{{ c.year }}">
+        <button type="button" class="tab" id="t-{{ c.year }}" data-year="{{ c.year }}" aria-label="Bring {{ c.year }} to the front"{% if c.front %} aria-current="true"{% endif %}><i></i>{{ c.year }}</button>
+        <div class="body"{% if not c.front %} inert aria-hidden="true"{% endif %}>
+          <header class="card-head"><h2>{{ c.year }}</h2><span class="muted">{{ summary(c.side) }}</span><button type="button" class="btn small ghost expect" data-year="{{ c.year }}" title="A document you’re waiting for: it shows as to come until it arrives">＋ Add to this year’s list</button></header>
+          {% if c.rows %}
+          <div class="grid-scroll"><div class="grid" role="table" aria-label="{{ c.year }}: who sent what" data-cols="{{ c.kinds|length }}">
+            <div class="gr gh" role="row"><span role="columnheader">Sender</span>{% for k, label in c.kinds %}<span role="columnheader">{{ label }}</span>{% endfor %}</div>
+            {% for r in c.rows %}<div class="gr" role="row"><span class="who" role="rowheader" title="{{ r.name }}">{{ r.name }}</span>{% for x in r.cells %}<span role="cell">{% if x %}<button type="button" class="sq s-{{ x.status }}" data-year="{{ c.year }}" data-sender="{{ r.name }}" data-kind="{{ x.kind }}" data-key="{{ x.key }}" data-what="{{ x.what }}" data-amount="{{ x.amount }}" data-docs="{{ x.docs }}" data-rows="{{ x.rows }}" aria-label="{{ c.year }}, {{ x.kind }} from {{ r.name }}: {{ x.what }}{{ ', ' ~ x.amount if x.amount }}">{{ x.text }}</button>{% endif %}</span>{% endfor %}</div>
+            {% endfor %}
+          </div></div>
+          {% else %}<p class="muted">Nothing expected for {{ c.year }} yet.</p>{% endif %}
+        </div>
+      </section>
+      {% endfor %}
+    </div>
+    <p class="legend"><span class="k s-in">In the binder</span><span class="k s-to_come">To come</span><span class="k s-missing">Never arrived</span><span class="k s-gap">Came last year, not on this year's list</span></p>
+  </div>
+
+  <aside class="side">
+    <section class="panel" id="sq" hidden aria-live="polite">
+      <header class="row spread"><small class="muted" id="sq-head"></small><button type="button" class="x" id="sq-close" aria-label="Close">✕</button></header>
+      <h2 id="sq-sender"></h2>
+      <p id="sq-what"></p>
+      <p class="amount" id="sq-amount"></p>
+      <button type="button" class="btn" id="sq-view" hidden>View the document</button>
+      <div id="sq-rows"></div>
+      <p class="small" id="sq-say" role="status"></p>
+    </section>
+    {% for c in cards %}{% set g = c.glance %}{% set s, a = g.s, g.a %}
+    <section class="panel" data-side="{{ c.year }}"{% if not c.front %} hidden{% endif %}>
+      <small class="muted">At the front</small>
+      <h2>{{ c.year }}</h2>
+      <p class="muted">{{ summary(c.side) }}.</p>
+      <div class="stages handoff">
+        <h3>Hand off <span class="pill {{ 'ok' if a.ready else 'warn' }}">{{ 'Ready' if a.ready else 'Not yet' }}</span></h3>
+        <p class="muted small">{{ a.why }}{% if not a.ready %} You can still make the files now, and again later.{% endif %}</p>
+        {% if g.made %}<p class="small">Last made {{ g.made.at.strftime('%b %-d') }}, with {{ g.made.documents }} documents{% if g.made.new %}; {{ g.made.new }} arrived since{% endif %}.</p>{% endif %}
+        <a class="btn {{ '' if a.ready else 'ghost' }}" href="/preparer?year={{ c.year }}">{{ 'Make the files again' if g.made else 'Make the files for your preparer' }}</a>
+      </div>
+      {% if c.side.open %}<ul class="open">
+        {% for name, kind, what, _ in c.side.open[:8] %}<li><b>{{ name }}</b> · {{ kind }}<br><span class="muted">{{ what }}</span></li>{% endfor %}
+        {% if c.side.open|length > 8 %}<li class="muted">and {{ c.side.open|length - 8 }} more</li>{% endif %}
+      </ul>{% endif %}
+      <a class="btn" href="/add?year={{ c.year }}">Add {{ c.year }} documents</a>
+      <button type="button" class="link small dl-year" data-year="{{ c.year }}">Download all files for {{ c.year }}</button>
+      {% if c.away %}<details class="more away"><summary>{{ c.away|length }} not expected in {{ c.year }}</summary><ul class="open">
+        {% for r in c.away %}<li data-id="{{ r.e.id }}"><b>{{ r.institution or r.source }}</b> · {{ r.doc_label }}{% if r.e.applicability_note %}<br><span class="muted">{{ r.e.applicability_note }}</span>{% endif %}<br><button type="button" class="link again">Expected again</button></li>{% endfor %}
+      </ul></details>{% endif %}
+    </section>
+    <section class="panel stages papers" data-side="{{ c.year }}"{% if not c.front %} hidden{% endif %} aria-labelledby="pp-h-{{ c.year }}">
+      <h3 id="pp-h-{{ c.year }}">For my preparer</h3>
+      <p class="muted small">Other papers your preparer needs (statements for an FBAR, a letter …), handed over as they are with your note. Not read, not checked.</p>
+      {% if c.papers %}<ul class="open">
+        {% for d in c.papers %}<li data-id="{{ d.id }}" data-note="{{ d.preparer_note or '' }}"><b class="pp-what">{{ d.preparer_note or d.original_filename }}</b>{% if d.preparer_note %}<br><span class="muted small">{{ d.original_filename }}</span>{% endif %}
+          <br><button type="button" class="link" data-view="{{ d.id }}">View</button> · <button type="button" class="link pp-note" aria-label="Edit the note on {{ d.original_filename }}">Edit note</button> · <button type="button" class="link danger pp-del" aria-label="Delete {{ d.original_filename }}">Delete</button></li>{% endfor %}
+      </ul>{% endif %}
+      <button type="button" class="btn small ghost pp-add" data-year="{{ c.year }}">＋ Add papers for {{ c.year }}</button>
+      <a class="small" href="/foreign?year={{ c.year }}">Accounts abroad (FBAR) ›</a>
+    </section>
+    <section class="panel stages" data-side="{{ c.year }}"{% if not c.front %} hidden{% endif %} aria-label="{{ c.year }}: check">
+      {% if s.deadline %}<p class="muted small">{{ 'Extended deadline' if g.extended else 'Filing deadline' }} {{ s.deadline.strftime('%b %-d, %Y') }}{% if s.days_left is not none %} · {% if s.days_left >= 0 %}{{ s.days_left }} day{{ 's' if s.days_left != 1 }} left{% else %}passed{% endif %}{% endif %}</p>{% endif %}
+      {% if s.checked and not s.params_reviewed %}<p class="muted small">Rule parameters for {{ c.year }} aren’t reviewed yet (deadlines, due dates, thresholds).</p>{% endif %}
+      <h3>Check</h3>
+      {% if asked or waiting %}<a class="btn small" href="/check?year={{ c.year }}">{{ 'Answer ' ~ asked ~ ' question' ~ ('s' if asked != 1 else '') if asked else 'File the ' ~ waiting ~ ' new documents' }}</a>{% endif %}
+      {% if not s.checked %}<p class="muted">TaxBinder doesn't check {{ c.year }}{% if s.checks_start %}: checks start with {{ s.checks_start }}{% endif %}.</p>
+      {% elif a.attention %}<ul class="open">{% for m in a.attention[:3] %}<li>{{ m }}</li>{% endfor %}</ul>
+        {% if a.attention|length > 3 %}<details class="more"><summary>{{ a.attention|length - 3 }} more to look at</summary><ul class="open">{% for m in a.attention[3:] %}<li>{{ m }}</li>{% endfor %}</ul></details>{% endif %}
+      {% else %}<p class="muted">Every check passed.</p>{% endif %}
+      {% if a.asks %}<p class="small"><a href="/add?year={{ c.year }}#mail">{{ a.asks|length }} question{{ 's' if a.asks|length != 1 }} about payments and gifts ›</a></p>{% endif %}
+      {% if s.checked %}<p class="small muted">{% if s.reconciled_at %}Checked {{ s.reconciled_at[:16]|replace('T', ' ') }} · {% endif %}<button type="button" class="link recheck" data-year="{{ c.year }}">Check again</button></p>{% endif %}
+    </section>
+    {% if c.notices %}<section class="panel notes" data-side="{{ c.year }}"{% if not c.front %} hidden{% endif %}>
+      <h2>Noticed for you</h2>
+      {% for n in c.notices[:4] %}{{ note(n) }}{% endfor %}
+      {% if c.notices|length > 4 %}<details class="more"><summary>{{ c.notices|length - 4 }} more</summary>
+        {% for n in c.notices[4:] %}{{ note(n) }}{% endfor %}
+      </details>{% endif %}
+    </section>{% endif %}
+    {% endfor %}
+  </aside>
+</div>
+{% endif %}
+<input type="file" id="rowfile" hidden aria-label="A file for this row" accept=".pdf,.png,.jpg,.jpeg,.heic,.html,.htm">
+{% include "_expect.html" %}
+{% include "_papers.html" %}
+{% endblock %}

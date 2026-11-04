@@ -1,0 +1,23 @@
+# Real tax data: never commit (see CLAUDE.md "Data safety")
+*.xlsx
+*.pdf
+vault/
+.taxbinder-dev/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# Desktop shell
+node_modules/
+desktop/src-tauri/target/
+desktop/src-tauri/gen/
+desktop/src-tauri/binaries/
+desktop/src-tauri/backend/
+
+.DS_Store

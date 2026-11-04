@@ -1,0 +1,28 @@
+{# The binder's pages (Documents, Payments, Donations, Foreign accounts, Changes, Check, Settings,
+   …): the base page, with a heading, the page's actions and its help, and the binder's tabs. #}
+{% extends "base.html" %}
+{% block body_class %} class="pages"{% endblock %}
+{% block styles %}<link rel="stylesheet" href="/static/pages.css">{% endblock %}
+{% block main %}
+    <div class="topbar">
+      <div class="crumbs"><small>{% block crumb %}{{ entity.name }} · {{ entity_desc }}{% endblock %}</small><h1>{% block heading %}{% endblock %}</h1></div>
+      <div class="row">
+        {% block actions %}{% endblock %}
+        {% if page_help and active != 'help.html' %}<details class="help-pop">
+          <summary>Help</summary>
+          <div class="help-body">{% for p in page_help %}<p>{{ p }}</p>{% endfor %}
+            <p class="links"><a href="/help#privacy">What's stored where</a> · <a href="/help#about">About</a></p></div>
+        </details>{% endif %}
+      </div>
+    </div>
+    {% if in_binder %}<nav class="binder-tabs" aria-label="Your binder">
+      <a href="/documents" class="{{ 'on' if active == 'documents.html' }}">Documents</a>
+      <a href="/payments" class="{{ 'on' if active == 'payments.html' }}">Payments{% if due_count %}<span class="count{{ ' alert' if overdue }}">{{ due_count }} due</span>{% endif %}</a>
+      <a href="/donations" class="{{ 'on' if active == 'donations.html' }}">Donations{% if letters_missing %}<span class="count">{{ letters_missing }} to do</span>{% endif %}</a>
+      <a href="/foreign" class="{{ 'on' if active == 'foreign.html' }}">Foreign accounts</a>
+      <a href="/history" class="{{ 'on' if active == 'history.html' }}">Changes</a>
+    </nav>{% endif %}
+    {% block content %}{% endblock %}
+{% endblock %}
+{% block scripts %}<script src="/static/grid.js"></script>
+<script src="/static/pages.js"></script>{% endblock %}

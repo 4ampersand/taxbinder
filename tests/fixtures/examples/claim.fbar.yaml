@@ -1,0 +1,12 @@
+# Synthetic (no §5 example): FBAR claim per §5.5 / §15
+id: 2025/fbar/example-bank.savings
+year: 2025
+category: fbar
+taxpayer: avery
+foreign_account:
+  source: example-bank.savings
+  currency: EUR
+  max_balance: 15000
+  interest: 420
+  withholding: 42
+  rate: 0.9

@@ -1,0 +1,10 @@
+{% extends "page.html" %}
+{% block title %}Licences{% endblock %}
+{% block crumb %}Help › About{% endblock %}
+{% block heading %}Third-party licences{% endblock %}
+{% block content %}
+{# The file made when the app was built (taxbinder/dev/licences.py), shown as it is. #}
+<p class="links"><a href="/help#about">Back to About</a></p>
+{% if text %}<section class="card"><pre class="licences">{{ text }}</pre></section>
+{% else %}<section class="card"><p>The list of libraries and their licences is added when TaxBinder is built, and this copy was built without it.</p></section>{% endif %}
+{% endblock %}

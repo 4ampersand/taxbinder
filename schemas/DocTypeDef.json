@@ -1,0 +1,49 @@
+{
+  "additionalProperties": false,
+  "description": "A document type the person added from the app or CLI (`registry/doc-types/<id>.yaml`).",
+  "properties": {
+    "folder": {
+      "default": "09-Other",
+      "enum": [
+        "00-Returns",
+        "01-W2",
+        "02-1099",
+        "03-K1",
+        "04-1098-5498",
+        "05-Estimated-Payments",
+        "06-Donations",
+        "07-Property-Vehicle",
+        "08-Foreign",
+        "09-Other"
+      ],
+      "title": "Folder",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^x-[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "keywords": {
+      "default": [],
+      "description": "Phrases that identify it on a document (case-insensitive)",
+      "items": {
+        "type": "string"
+      },
+      "title": "Keywords",
+      "type": "array"
+    },
+    "name": {
+      "maxLength": 60,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "name"
+  ],
+  "title": "DocTypeDef",
+  "type": "object"
+}

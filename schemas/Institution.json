@@ -1,0 +1,170 @@
+{
+  "$defs": {
+    "Lineage": {
+      "additionalProperties": false,
+      "properties": {
+        "effective": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Effective"
+        },
+        "institution": {
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "title": "Institution",
+          "type": "string"
+        },
+        "relation": {
+          "description": "e.g. acquired_by, renamed_to, merged_into",
+          "title": "Relation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "relation",
+        "institution"
+      ],
+      "title": "Lineage",
+      "type": "object"
+    },
+    "MonthDay": {
+      "additionalProperties": false,
+      "properties": {
+        "day": {
+          "maximum": 31,
+          "minimum": 1,
+          "title": "Day",
+          "type": "integer"
+        },
+        "month": {
+          "maximum": 12,
+          "minimum": 1,
+          "title": "Month",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "month",
+        "day"
+      ],
+      "title": "MonthDay",
+      "type": "object"
+    },
+    "Portal": {
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        }
+      },
+      "title": "Portal",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "aliases": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Aliases",
+      "type": "array"
+    },
+    "id": {
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "kind": {
+      "default": "other",
+      "enum": [
+        "brokerage",
+        "bank",
+        "fund_sponsor",
+        "real_estate_sponsor",
+        "employer",
+        "government",
+        "charity",
+        "daf",
+        "other"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "lineage": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Lineage"
+      },
+      "title": "Lineage",
+      "type": "array"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    },
+    "portal": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Portal"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "tin": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "EIN as printed on its forms; encrypted (\u00a74.6)",
+      "title": "Tin"
+    },
+    "typical_release": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/MonthDay"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "id",
+    "name"
+  ],
+  "title": "Institution",
+  "type": "object"
+}

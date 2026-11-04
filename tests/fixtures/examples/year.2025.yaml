@@ -1,0 +1,10 @@
+# Synthetic (no §5 example)
+year: 2025
+filing_status: married_filing_jointly
+extension_filed: true
+deadlines:
+  federal_extended: 2026-10-15
+  ca_extended: 2026-10-15
+preparer: { name: Example CPA, channel: smartvault }
+summaries:
+  - { subject: tax_payment/federal, value: 200000, source: "hand:summary" }

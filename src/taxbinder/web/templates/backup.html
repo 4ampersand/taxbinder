@@ -1,0 +1,48 @@
+{% extends "page.html" %}
+{% block title %}Keep it safe{% endblock %}
+{% block heading %}Keep it safe{% endblock %}
+{% block content %}
+{# Keep it safe: the recovery key shown once and confirmed, and a backup. The key
+   is never in this page: it comes from /api/safe/key on a click. #}
+{% if done %}<section class="card"><p class="ok"><b>Your binder is safe:</b> the recovery key is saved and there's a backup. Back up again now and then, after new documents arrive.</p></section>{% endif %}
+
+<section class="card" id="key-card">
+  <h2>1. Your recovery key</h2>
+  <p class="print-only"><b>TaxBinder recovery key.</b> Keep this sheet somewhere safe, away from your Mac. Don't share it or paste it into chats or email. To bring your binder back on a new Mac: open TaxBinder, choose Restore from a backup, and type this key.</p>
+  <p class="muted">Everything in your binder is encrypted. The recovery key opens it on another Mac, or on this one if its key is lost: with a backup, it brings everything back. Without it, nobody can open your binder, not even TaxBinder.</p>
+  {% if waiting %}
+  <div id="safe-hidden" class="row"><button type="button" id="safe-show">Show my recovery key</button><span class="muted small-text">Make sure nobody can see your screen.</span></div>
+  <div id="safe-shown" hidden>
+    <pre class="keybox" id="safe-key" tabindex="-1" role="textbox" aria-readonly="true" aria-multiline="true" aria-label="Your recovery key"></pre>
+    <div class="row"><button type="button" class="secondary act-print">Print</button><button type="button" class="secondary act-print">Save as PDF</button><button type="button" class="secondary" id="safe-copy">Copy</button></div>
+    <p class="muted small-text">Save it as a PDF or print it, or copy it into your password manager (for example as a secure note). It's shown only until you confirm.</p>
+    <div class="last4"><label for="safe-last4">To confirm you've kept it, type its last 4 characters</label>
+      <div class="row"><input id="safe-last4" maxlength="4" autocomplete="off" spellcheck="false"><button type="button" id="safe-confirm">I've saved it</button></div></div>
+  </div>
+  {% else %}
+  <p class="ok"><b>Saved.</b> <span class="muted">You've kept your recovery key; it isn't stored on this Mac.</span></p>
+  <p class="links">Lost it? <a href="#" id="safe-mac">Show this Mac's key instead</a>: it opens your binder and your backups the same way.</p>
+  <div id="safe-shown" hidden>
+    <pre class="keybox" id="safe-key" tabindex="-1" role="textbox" aria-readonly="true" aria-multiline="true" aria-label="Your recovery key"></pre>
+    <div class="row"><button type="button" class="secondary act-print">Print</button><button type="button" class="secondary act-print">Save as PDF</button><button type="button" class="secondary" id="safe-copy">Copy</button></div>
+  </div>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>2. A backup</h2>
+  <div class="row spread">
+    <div>
+      {% if last %}<b class="{{ 'warn' if age is not none and age > 30 else 'ok' }}">Last backup {{ when }}</b> <span class="muted">({{ 'today' if age == 0 else (age ~ ' days ago') }} · {{ last.name }})</span>
+      {% else %}<b class="warn">No backup yet.</b>{% endif %}
+    </div>
+    <button id="backup-now" type="button">Back up now</button>
+  </div>
+  <p class="muted small-text">Saves one file to {{ folder }}: every binder (the household's and each filer's) with all documents, records and history. It's <b>fully encrypted</b>, names and amounts included, so it's safe to keep in iCloud, Google Drive or on an external drive. It opens only with your recovery key or this Mac's key.</p>
+  <p class="muted small-text">On a new Mac: open TaxBinder, choose <b>Restore from a backup</b>, and give it the file and your recovery key.</p>
+  <p class="links"><a href="/help#backups">What a backup and the recovery key bring back</a> · <a href="/help#new-mac">Moving to a new Mac</a></p>
+</section>
+
+{% if not done %}<div class="row"><button type="button" class="secondary" id="safe-later">Remind me later</button><a href="/">Go on to your binder</a></div>{% endif %}
+<p id="msg" role="status"></p>
+{% endblock %}

@@ -1,0 +1,40 @@
+{# The top bar, the same on every page: base.html includes it; bar.js makes its
+   buttons work. #}
+  <header class="topnav">
+    <a class="brand" href="/">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="5" y="3" width="15" height="18" rx="2"/><path d="M5 7H3M5 12H3M5 17H3M9 8h7M9 12h7M9 16h4"/></svg>
+      TaxBinder
+    </a>
+    {% if other_filers %}<div class="entities" role="group" aria-label="Filing for">
+      {% for slug, info in entities %}<button type="button" class="filer{{ ' on' if slug == entity_slug }} tab-{{ loop.index0 % 4 }}" data-entity="{{ slug }}" aria-pressed="{{ 'true' if slug == entity_slug else 'false' }}" title="Form {{ info.form }}"><i></i><b>{{ info.name }}</b></button>{% if not remote and slug == entity_slug %}<button type="button" class="rename-entity" data-rename="{{ slug }}" data-name="{{ info.name }}" aria-label="Rename {{ info.name }}" title="Rename">✎</button>{% endif %}{% endfor %}
+      {% for slug, name in locked_entities %}<button type="button" class="filer locked{{ ' on' if slug == entity_slug }}" data-entity="{{ slug }}" aria-pressed="{{ 'true' if slug == entity_slug else 'false' }}" title="Locked: needs your recovery key"><i></i>{{ name }}</button>{% endfor %}
+      {% if not remote %}<button type="button" class="add-entity" id="add-entity-open" aria-label="Add an entity">＋</button>{% endif %}
+    </div>{% endif %}
+    {% if ready %}<nav class="topnav-links" aria-label="TaxBinder">
+      {% set home = active == 'home.html' %}
+      <a href="/" class="{{ 'on' if home }}"{% if home %} aria-current="page"{% endif %}>Your binder</a>
+      {# no Add documents here: it's on Your binder, Documents and Check #}
+      {% for s in steps if s.id == 'check' %}{% set on = s.id == here %}<a href="{{ s.href }}" class="{{ 'on' if on }}"{% if on %} aria-current="page"{% endif %}>{{ s.label }}{% if s.badge %}<small class="{{ 'new' if s.news }}">{{ s.badge }}</small>{% endif %}</a>{% endfor %}
+      <a href="/documents" class="{{ 'on' if in_binder }}"{% if in_binder %} aria-current="page"{% endif %}>Documents</a>
+      {% set ay = active == 'years.html' %}<a href="/years" class="{{ 'on' if ay }}"{% if ay %} aria-current="page"{% endif %}>Across the years</a>
+    </nav>
+    <div class="topnav-foot">
+      {% if not remote %}{% if demo %}<span class="muted">Demo: not backed up</span>{% else %}<a href="/backup" class="{{ 'on' if active == 'backup.html' }}">Last backup: {{ last_backup }}</a>{% endif %}
+      <a href="/settings" class="gear{{ ' on' if active == 'settings.html' }}">Settings</a>{% endif %}
+      <a href="/help" class="{{ 'on' if active == 'help.html' }}">Help</a>
+      <span class="bar-say" id="bar-say" role="status"></span>
+      {% if remote and device %}<span class="shared-as">on {{ device.name }}</span>
+      {% elif sharing %}<a href="/sharing" class="shared-on">Shared · {{ sharing.port }}</a>{% endif %}
+    </div>{% endif %}
+  </header>
+{% if not remote and other_filers %}<div class="scrim" id="add-entity" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="add-entity-title">
+    <header><h2 id="add-entity-title">Add an entity</h2><button class="link" type="button" data-close="add-entity" aria-label="Close">✕</button></header>
+    <div class="form">
+      <div class="field wide"><label for="ent-name">Name</label><input id="ent-name" placeholder="e.g. Northwind Holdings Inc."></div>
+      <div class="field wide"><label for="ent-form">Return it files</label><select id="ent-form">{% for f, label in return_forms.items() %}{% if f != '1040' %}<option value="{{ f }}">{{ label }}</option>{% endif %}{% endfor %}<option value="1040">{{ return_forms['1040'] }}</option></select></div>
+      <p class="tip field wide">It gets its own checklist, payments, documents, checks and accountant package, in a separate vault locked with the same keys: your recovery key opens it too.</p>
+    </div>
+    <footer><button class="secondary" type="button" data-close="add-entity">Cancel</button><button id="ent-add" type="button">Add entity</button></footer>
+  </div>
+</div>{% endif %}

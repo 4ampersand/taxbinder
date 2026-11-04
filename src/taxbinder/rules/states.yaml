@@ -1,0 +1,377 @@
+# State income tax table: every state and DC.
+#
+# Drafted from each state's own pages (`page`); not reviewed. Whoever checks an entry against
+# its page sets `reviewed_by` and `reviewed_at` on it; until then the app labels that state's
+# dates "not reviewed". A state's dates in rules/params/<year>.yaml, if any, win over this table.
+#
+# estimated: the installment due dates as the state publishes them, "MM-DD" (a January or
+#   February date is in the year after the tax year); moved to the next business day after a
+#   weekend or federal holiday when a year's dates are worked out (`states.py`).
+# quarters: which estimated_qN each date is, when not 1-4 (California has no third).
+# shares: each installment's share of the year's payment, when not equal.
+# An empty `estimated` means the state doesn't require estimated payments (see `note`).
+# `income_tax: false` means only that the state doesn't tax wages and investment income;
+# never that there's nothing to do (property, sales and other taxes aren't covered here).
+
+AL:
+  name: Alabama
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: "40", nonresident: 40NR, estimated: 40ES, penalty: 2210AL}
+  page: https://www.revenue.alabama.gov/wp-content/uploads/2026/01/26f40esinstr.pdf
+  reviewed_by: null
+AK:
+  name: Alaska
+  income_tax: false
+  note: Alaska doesn't tax wages or investment income.
+  estimated: []
+  page: https://taxadmin.org/wp-content/uploads/resources/state-income-taxes/0003-individual-income-tax-provisions-in-the-states-informational-paper-3.pdf
+  reviewed_by: null
+AZ:
+  name: Arizona
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: "140", nonresident: 140NR, part_year: 140PY, estimated: 140ES, penalty: "221"}
+  page: https://azdor.gov/individuals/individual-estimated-tax-payments
+  reviewed_by: null
+AR:
+  name: Arkansas
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: AR1000F, nonresident: AR1000NR, estimated: AR1000ES, penalty: AR2210}
+  page: https://www.dfa.arkansas.gov/wp-content/uploads/2025_Final_AR1000ES.pdf
+  reviewed_by: null
+CA:
+  name: California
+  income_tax: true
+  estimated: ["04-15", "06-15", "01-15"]
+  quarters: [1, 2, 4]
+  shares: [0.30, 0.40, 0.30]
+  note: No third installment; 30% / 40% / 30%.
+  forms: {resident: "540", nonresident: 540NR, estimated: 540-ES, penalty: FTB 5805}
+  page: https://www.ftb.ca.gov/forms/2026/2026-540-es-instructions.html
+  reviewed_by: null
+CO:
+  name: Colorado
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: DR 0104, nonresident: DR 0104 with DR 0104PN, estimated: DR 0104EP, penalty: DR 0204}
+  page: https://tax.colorado.gov/individual-income-tax-estimated-payments
+  reviewed_by: null
+CT:
+  name: Connecticut
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: CT-1040, nonresident: CT-1040NR/PY, estimated: CT-1040ES, penalty: CT-2210}
+  page: https://portal.ct.gov/drs/individuals/resident-income-tax/tax-information
+  reviewed_by: null
+DE:
+  name: Delaware
+  income_tax: true
+  estimated: ["04-30", "06-15", "09-15", "01-15"]
+  forms: {resident: PIT-RES, nonresident: PIT-NON, estimated: PIT-EST, penalty: PIT-UND}
+  page: https://revenuefiles.delaware.gov/docs/13_200es_5e.pdf
+  reviewed_by: null
+DC:
+  name: District of Columbia
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: D-40, estimated: D-40ES, penalty: D-2210}
+  page: https://otr.cfo.dc.gov/sites/default/files/dc/sites/otr/publication/attachments/2026_D-40ES_0002_021926.pdf
+  reviewed_by: null
+FL:
+  name: Florida
+  income_tax: false
+  note: Florida doesn't tax wages or investment income.
+  estimated: []
+  page: https://taxadmin.org/wp-content/uploads/resources/state-income-taxes/0003-individual-income-tax-provisions-in-the-states-informational-paper-3.pdf
+  reviewed_by: null
+GA:
+  name: Georgia
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: "500", nonresident: 500 with Schedule 3, estimated: 500-ES, penalty: 500 UET}
+  page: https://dor.georgia.gov/document/form/2019-500-es-estimated-tax-individuals-and-fiduciaries/download
+  reviewed_by: null
+HI:
+  name: Hawaii
+  income_tax: true
+  estimated: ["04-20", "06-20", "09-20", "01-20"]
+  forms: {resident: N-11, nonresident: N-15, estimated: N-200V, penalty: N-210}
+  page: https://files.hawaii.gov/tax/legal/taxfacts/tf2019-3.pdf
+  reviewed_by: null
+ID:
+  name: Idaho
+  income_tax: true
+  estimated: []
+  note: Idaho doesn't require estimated payments; Form 51 is for voluntary ones.
+  forms: {resident: "40", nonresident: "43", estimated: "51"}
+  page: https://tax.idaho.gov/wp-content/uploads/forms/EIN00046/EIN00046_03-02-2026.pdf
+  reviewed_by: null
+IL:
+  name: Illinois
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: IL-1040, nonresident: IL-1040 with Schedule NR, estimated: IL-1040-ES, penalty: IL-2210}
+  page: https://tax.illinois.gov/research/publications/pubs/illinois-estimated-payments-requirements-for-individuals-and-businesses.html
+  reviewed_by: null
+IN:
+  name: Indiana
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: IT-40, nonresident: IT-40PNR, estimated: ES-40, penalty: IT-2210}
+  page: https://www.in.gov/dor/files/ib03.pdf
+  reviewed_by: null
+IA:
+  name: Iowa
+  income_tax: true
+  estimated: ["04-30", "06-30", "09-30", "01-31"]
+  forms: {resident: IA 1040, nonresident: IA 1040 with IA 126, estimated: IA 1040ES, penalty: IA 2210}
+  page: https://revenue.iowa.gov/media/2725/download?inline=
+  reviewed_by: null
+KS:
+  name: Kansas
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: K-40, estimated: K-40ES, penalty: K-210}
+  page: https://www.ksrevenue.gov/pdf/k-40es26.pdf
+  reviewed_by: null
+KY:
+  name: Kentucky
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: "740", nonresident: 740-NP, estimated: 740-ES, penalty: 2210-K}
+  page: https://revenue.ky.gov/Forms/740-ES%20Instructions%20(2025).pdf
+  reviewed_by: null
+LA:
+  name: Louisiana
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: IT-540, nonresident: IT-540B, estimated: IT-540ES}
+  page: https://revenue.louisiana.gov/individuals/general-resources/declaration-of-estimated-income-taxes/
+  reviewed_by: null
+ME:
+  name: Maine
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: 1040ME, nonresident: 1040ME with Schedule NR, estimated: 1040ES-ME, penalty: 2210ME}
+  page: https://www.maine.gov/revenue/tax-return-forms/due-dates
+  reviewed_by: null
+MD:
+  name: Maryland
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: "502", nonresident: "505", estimated: PV, penalty: 502UP}
+  page: https://www.marylandtaxes.gov/individual/income/forms/2025-Income-Tax-Forms.php
+  reviewed_by: null
+MA:
+  name: Massachusetts
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: Form 1, nonresident: Form 1-NR/PY, estimated: Form 1-ES, penalty: M-2210}
+  page: https://www.mass.gov/info-details/massachusetts-dor-estimated-tax-payments
+  reviewed_by: null
+MI:
+  name: Michigan
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: MI-1040, nonresident: MI-1040 with Schedule NR, estimated: MI-1040ES, penalty: MI-2210}
+  page: https://www.michigan.gov/taxes/-/media/Project/Websites/taxes/Forms/IIT/TY2025/MI-1040ES-(2026).pdf
+  reviewed_by: null
+MN:
+  name: Minnesota
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: M1, nonresident: M1 with Schedule M1NR, penalty: M15}
+  page: https://www.revenue.state.mn.us/estimated-tax
+  reviewed_by: null
+MS:
+  name: Mississippi
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: 80-105, nonresident: 80-205, estimated: 80-106, penalty: 80-320}
+  page: https://www.dor.ms.gov/individual/individual-income-tax-frequently-asked-questions
+  reviewed_by: null
+MO:
+  name: Missouri
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: MO-1040, nonresident: MO-1040 with MO-NRI, estimated: MO-1040ES, penalty: MO-2210}
+  page: https://dor.mo.gov/forms/MO-1040ES_2026.pdf
+  reviewed_by: null
+MT:
+  name: Montana
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: Form 2, penalty: EST-I}
+  page: https://revenue.mt.gov/taxes/estimated-tax-payments
+  reviewed_by: null
+NE:
+  name: Nebraska
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: 1040N, nonresident: 1040N with Schedule III, estimated: 1040N-ES, penalty: 2210N}
+  page: https://revenue.nebraska.gov/sites/default/files/doc/tax-forms/drafts/f_1040n-es.pdf
+  reviewed_by: null
+NV:
+  name: Nevada
+  income_tax: false
+  note: Nevada doesn't tax wages or investment income.
+  estimated: []
+  page: https://taxadmin.org/wp-content/uploads/resources/state-income-taxes/0003-individual-income-tax-provisions-in-the-states-informational-paper-3.pdf
+  reviewed_by: null
+NH:
+  name: New Hampshire
+  income_tax: false
+  note: New Hampshire doesn't tax wages; its interest and dividends tax ended for tax periods from January 1, 2025 (returns for 2024 and earlier still apply).
+  estimated: []
+  page: https://www.revenue.nh.gov/news-and-media/repeal-nh-interest-and-dividends-tax-now-effect
+  reviewed_by: null
+NJ:
+  name: New Jersey
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: NJ-1040, nonresident: NJ-1040NR, estimated: NJ-1040-ES, penalty: NJ-2210}
+  page: https://www.nj.gov/treasury/taxation/njit20.shtml
+  reviewed_by: null
+NM:
+  name: New Mexico
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: PIT-1, nonresident: PIT-1 with PIT-B, estimated: PIT-ES, penalty: RPD-41272}
+  page: https://www.tax.newmexico.gov/individuals/file-your-taxes-overview/estimated-payments/
+  reviewed_by: null
+NY:
+  name: New York
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: IT-201, nonresident: IT-203, estimated: IT-2105, penalty: IT-2105.9}
+  page: https://www.tax.ny.gov/pit/file/income_tax_filing_due_dates.htm
+  reviewed_by: null
+NC:
+  name: North Carolina
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: D-400, nonresident: D-400 with Schedule PN, estimated: NC-40, penalty: D-422}
+  page: https://www.ncdor.gov/taxes-forms/individual-income-tax/estimated-income-tax
+  reviewed_by: null
+ND:
+  name: North Dakota
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: ND-1, nonresident: ND-1 with Schedule ND-1NR, estimated: ND-1ES, penalty: ND-1UT}
+  page: https://www.tax.nd.gov/sites/www/files/documents/forms/individual/2025-iit/28709-form-nd-1es-2026.pdf
+  reviewed_by: null
+OH:
+  name: Ohio
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: IT 1040, nonresident: IT 1040 with IT NRC, estimated: IT 1040ES, penalty: IT/SD 2210}
+  page: https://tax.ohio.gov/individual/resources/estimated-payments
+  reviewed_by: null
+OK:
+  name: Oklahoma
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: "511", nonresident: 511-NR, estimated: OW-8-ES, penalty: OW-8-P}
+  page: https://oklahoma.gov/content/dam/ok/en/tax/documents/forms/software-developers/DevOW-8-ES-26.pdf
+  reviewed_by: null
+OR:
+  name: Oregon
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: OR-40, nonresident: OR-40-N, part_year: OR-40-P, estimated: OR-40-V, penalty: OR-10}
+  page: https://www.oregon.gov/dor/forms/FormsPubs/form-or-40-v-instructions_101-172-1.pdf
+  reviewed_by: null
+PA:
+  name: Pennsylvania
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: PA-40, estimated: PA-40 ES (I), penalty: REV-1630}
+  page: https://www.pa.gov/content/dam/copapwp-pagov/en/revenue/documents/formsandpublications/formsforindividuals/pit/documents/2024/2024_rev-1630.pdf
+  reviewed_by: null
+RI:
+  name: Rhode Island
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: RI-1040, nonresident: RI-1040NR, estimated: RI-1040ES, penalty: RI-2210}
+  page: https://tax.ri.gov/sites/g/files/xkgbur541/files/2026-01/2026%20RI-1040ES_w.pdf
+  reviewed_by: null
+SC:
+  name: South Carolina
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: SC1040, nonresident: SC1040 with Schedule NR, estimated: SC1040ES, penalty: SC2210}
+  page: https://dor.sc.gov/sites/dor/files/forms/SC1040ES_2026.pdf
+  reviewed_by: null
+SD:
+  name: South Dakota
+  income_tax: false
+  note: South Dakota doesn't tax wages or investment income.
+  estimated: []
+  page: https://taxadmin.org/wp-content/uploads/resources/state-income-taxes/0003-individual-income-tax-provisions-in-the-states-informational-paper-3.pdf
+  reviewed_by: null
+TN:
+  name: Tennessee
+  income_tax: false
+  note: Tennessee doesn't tax wages; its Hall tax on interest and dividends ended for tax years from January 1, 2021.
+  estimated: []
+  page: https://www.tn.gov/revenue/taxes/hall-income-tax.html
+  reviewed_by: null
+TX:
+  name: Texas
+  income_tax: false
+  note: Texas doesn't tax wages or investment income.
+  estimated: []
+  page: https://taxadmin.org/wp-content/uploads/resources/state-income-taxes/0003-individual-income-tax-provisions-in-the-states-informational-paper-3.pdf
+  reviewed_by: null
+UT:
+  name: Utah
+  income_tax: true
+  estimated: []
+  note: Utah doesn't require estimated payments; prepayments (TC-546) are voluntary.
+  forms: {resident: TC-40, estimated: TC-546}
+  page: https://files.tax.utah.gov/tax/forms/current/tc-40inst.pdf
+  reviewed_by: null
+VT:
+  name: Vermont
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: IN-111, nonresident: IN-111 with IN-113, estimated: IN-114, penalty: IN-152}
+  page: https://tax.vermont.gov/individuals/estimated-income-tax
+  reviewed_by: null
+VA:
+  name: Virginia
+  income_tax: true
+  estimated: ["05-01", "06-15", "09-15", "01-15"]
+  forms: {resident: "760", nonresident: "763", part_year: 760PY, estimated: 760ES, penalty: 760C}
+  page: https://www.tax.virginia.gov/individual-estimated-tax-payments
+  reviewed_by: null
+WA:
+  name: Washington
+  income_tax: false
+  note: Washington doesn't tax wages; it has a capital gains excise tax on some long-term gains, with no estimated payments required (its 2025 returns and payments are due May 1, 2026).
+  estimated: []
+  page: https://dor.wa.gov/taxes-rates/other-taxes/capital-gains-tax
+  reviewed_by: null
+WV:
+  name: West Virginia
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: IT-140, estimated: IT-140ES, penalty: IT-210}
+  page: https://tax.wv.gov/Documents/TaxForms/it140esi.pdf
+  reviewed_by: null
+WI:
+  name: Wisconsin
+  income_tax: true
+  estimated: ["04-15", "06-15", "09-15", "01-15"]
+  forms: {resident: Form 1, nonresident: Form 1NPR, estimated: Form 1-ES, penalty: Schedule U}
+  page: https://www.revenue.wi.gov/Pages/FAQS/pcs-estpay.aspx
+  reviewed_by: null
+WY:
+  name: Wyoming
+  income_tax: false
+  note: Wyoming doesn't tax wages or investment income.
+  estimated: []
+  page: https://taxadmin.org/wp-content/uploads/resources/state-income-taxes/0003-individual-income-tax-provisions-in-the-states-informational-paper-3.pdf
+  reviewed_by: null

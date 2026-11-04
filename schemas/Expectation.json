@@ -1,0 +1,362 @@
+{
+  "$defs": {
+    "Event": {
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "format": "date",
+              "type": "string"
+            }
+          ],
+          "title": "At"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "type": {
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "at",
+        "type"
+      ],
+      "title": "Event",
+      "type": "object"
+    },
+    "LastCheck": {
+      "additionalProperties": false,
+      "description": "Last attempt to find the document; `not_found` and `could_not_check` differ (\u00a77.2).",
+      "properties": {
+        "at": {
+          "format": "date-time",
+          "title": "At",
+          "type": "string"
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Detail"
+        },
+        "result": {
+          "enum": [
+            "found",
+            "not_found",
+            "could_not_check"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "via": {
+          "title": "Via",
+          "type": "string"
+        }
+      },
+      "required": [
+        "at",
+        "via",
+        "result"
+      ],
+      "title": "LastCheck",
+      "type": "object"
+    },
+    "Link": {
+      "additionalProperties": false,
+      "description": "Evidence link, stored on the side that needs evidence (\u00a74.4).",
+      "properties": {
+        "doc": {
+          "pattern": "^doc_[0-9a-f]{12}$",
+          "title": "Doc",
+          "type": "string"
+        },
+        "linked_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "format": "date",
+              "type": "string"
+            }
+          ],
+          "title": "Linked At"
+        },
+        "linked_by": {
+          "description": "`<user>` or `auto:<component>`",
+          "title": "Linked By",
+          "type": "string"
+        },
+        "role": {
+          "default": "primary",
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "doc",
+        "linked_at",
+        "linked_by"
+      ],
+      "title": "Link",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "acquisition": {
+      "default": "expected",
+      "enum": [
+        "expected",
+        "available",
+        "received",
+        "vaulted",
+        "superseded"
+      ],
+      "title": "Acquisition",
+      "type": "string"
+    },
+    "amount": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Amount"
+    },
+    "applicability": {
+      "default": "applicable",
+      "enum": [
+        "applicable",
+        "not_applicable",
+        "not_issued",
+        "deferred_next_year",
+        "below_threshold",
+        "final_year_prior",
+        "consolidated_elsewhere",
+        "other"
+      ],
+      "title": "Applicability",
+      "type": "string"
+    },
+    "applicability_note": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Applicability Note"
+    },
+    "comment": {
+      "default": "",
+      "title": "Comment",
+      "type": "string"
+    },
+    "delivery": {
+      "default": "not_sent",
+      "enum": [
+        "not_sent",
+        "sent",
+        "stale"
+      ],
+      "title": "Delivery",
+      "type": "string"
+    },
+    "doc_type": {
+      "anyOf": [
+        {
+          "enum": [
+            "w2",
+            "1099_composite",
+            "1099_int",
+            "1099_div",
+            "1099_q",
+            "1099_r",
+            "1099_misc",
+            "1099_nec",
+            "ssa_1099",
+            "1098",
+            "5498",
+            "5498_sa",
+            "k1_1065",
+            "k1_state",
+            "k1_1120s",
+            "k1_1041",
+            "donation_ack",
+            "form_8283_support",
+            "payment_confirmation",
+            "property_tax_bill",
+            "vehicle_registration",
+            "account_change_notice",
+            "foreign_bank_statement",
+            "fbar_filing",
+            "tax_return",
+            "return_paper"
+          ],
+          "type": "string"
+        },
+        {
+          "pattern": "^x-[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "type": "string"
+        }
+      ],
+      "title": "Doc Type"
+    },
+    "due_by": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Due By"
+    },
+    "events": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Event"
+      },
+      "title": "Events",
+      "type": "array"
+    },
+    "evidence": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Link"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "expected_available_at": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expected Available At"
+    },
+    "follow_up_at": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Follow Up At"
+    },
+    "id": {
+      "pattern": "^\\d{4}/[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+      "title": "Id",
+      "type": "string"
+    },
+    "last_check": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LastCheck"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "priority": {
+      "anyOf": [
+        {
+          "enum": [
+            "low",
+            "normal",
+            "high"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Priority"
+    },
+    "review": {
+      "default": "unreviewed",
+      "enum": [
+        "unreviewed",
+        "extracted",
+        "needs_attention",
+        "verified"
+      ],
+      "title": "Review",
+      "type": "string"
+    },
+    "source": {
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+      "title": "Source",
+      "type": "string"
+    },
+    "split_reporting": {
+      "default": false,
+      "title": "Split Reporting",
+      "type": "boolean"
+    },
+    "year": {
+      "title": "Year",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "year",
+    "source",
+    "doc_type"
+  ],
+  "title": "Expectation",
+  "type": "object"
+}

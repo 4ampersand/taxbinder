@@ -1,0 +1,304 @@
+{
+  "$defs": {
+    "Identifier": {
+      "additionalProperties": false,
+      "description": "One account number (or other identifier) a Source has used (\u00a75.2a).",
+      "properties": {
+        "effective_from": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Effective From"
+        },
+        "effective_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Effective To"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Masked display value, e.g. \u20262291",
+          "title": "Hint"
+        },
+        "issuer": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Issuer"
+        },
+        "kind": {
+          "default": "primary",
+          "enum": [
+            "primary",
+            "legacy",
+            "alternate",
+            "reference"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "number": {
+          "description": "`ENC[age:\u2026]` on disk; plaintext only in memory",
+          "title": "Number",
+          "type": "string"
+        },
+        "source_doc": {
+          "anyOf": [
+            {
+              "pattern": "^doc_[0-9a-f]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Doc"
+        }
+      },
+      "required": [
+        "number"
+      ],
+      "title": "Identifier",
+      "type": "object"
+    },
+    "Produces": {
+      "additionalProperties": false,
+      "properties": {
+        "doc_type": {
+          "anyOf": [
+            {
+              "enum": [
+                "w2",
+                "1099_composite",
+                "1099_int",
+                "1099_div",
+                "1099_q",
+                "1099_r",
+                "1099_misc",
+                "1099_nec",
+                "ssa_1099",
+                "1098",
+                "5498",
+                "5498_sa",
+                "k1_1065",
+                "k1_state",
+                "k1_1120s",
+                "k1_1041",
+                "donation_ack",
+                "form_8283_support",
+                "payment_confirmation",
+                "property_tax_bill",
+                "vehicle_registration",
+                "account_change_notice",
+                "foreign_bank_statement",
+                "fbar_filing",
+                "tax_return",
+                "return_paper"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^x-[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string"
+            }
+          ],
+          "title": "Doc Type"
+        },
+        "federal": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Federal"
+        },
+        "optional": {
+          "default": false,
+          "title": "Optional",
+          "type": "boolean"
+        },
+        "states": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "States"
+        }
+      },
+      "required": [
+        "doc_type"
+      ],
+      "title": "Produces",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "closed": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Closed"
+    },
+    "expected_each_year": {
+      "default": true,
+      "title": "Expected Each Year",
+      "type": "boolean"
+    },
+    "first_tax_year": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "First Tax Year"
+    },
+    "id": {
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+      "title": "Id",
+      "type": "string"
+    },
+    "identifiers": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Identifier"
+      },
+      "title": "Identifiers",
+      "type": "array"
+    },
+    "institution": {
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "title": "Institution",
+      "type": "string"
+    },
+    "last_tax_year": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Last Tax Year"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    },
+    "opened": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Opened"
+    },
+    "owner": {
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "title": "Owner",
+      "type": "string"
+    },
+    "produces": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Produces"
+      },
+      "title": "Produces",
+      "type": "array"
+    },
+    "tags": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Tags",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "institution",
+    "name",
+    "owner"
+  ],
+  "title": "Source",
+  "type": "object"
+}

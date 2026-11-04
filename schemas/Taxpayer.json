@@ -1,0 +1,80 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "kind": {
+      "default": "individual",
+      "enum": [
+        "individual",
+        "trust",
+        "entity"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "last4": {
+      "anyOf": [
+        {
+          "pattern": "^\\d{4}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Of the SSN/EIN; never more",
+      "title": "Last4"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    },
+    "role": {
+      "anyOf": [
+        {
+          "enum": [
+            "taxpayer",
+            "spouse",
+            "dependent"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "In the household; None for a trust or not said",
+      "title": "Role"
+    },
+    "tin": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Encrypted in the vault (\u00a74.6)",
+      "title": "Tin"
+    }
+  },
+  "required": [
+    "id",
+    "name"
+  ],
+  "title": "Taxpayer",
+  "type": "object"
+}

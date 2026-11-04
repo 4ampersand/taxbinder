@@ -1,0 +1,402 @@
+/* Every page: the top bar, the viewer, and home, Across the years and Add documents. System fonts
+   and inline SVG only: the app runs offline under a self-only content policy that blocks style
+   attributes, so every style lives here; positions that change are CSS variables set by app.js.
+   The components here (cards, buttons, dialogs, …) stop at the binder's pages (`body.pages`, page.html), which pages.css styles: `:where()` adds
+   no specificity, so here every rule keeps its place in the cascade. */
+:root {
+  --paper: #eef1ee; --sheet: #ffffff; --sheet-2: #f7f9f8; --ink: #18201d; --ink-2: #55615c; --rule: #e2e6e3;
+  --bar: #12352d; --bar-ink: #dbe7e2; --accent: #1f6b57; --accent-soft: #e3f0eb;
+  --ok: #1f7a4d; --ok-2: #258a58; --ok-soft: #e2f3ea; --warn: #9a5b00; --warn-soft: #fbefdc; --miss: #b4501f; --miss-2: #c25a27;
+  --edge-1: #d6ddd9; --edge-2: #cbd4cf; --edge-3: #c0cbc5; --lift: rgb(16 32 26 / .12); --lift-2: rgb(16 32 26 / .20);
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --paper: #0f1412; --sheet: #182019; --sheet-2: #141b17; --ink: #e8eeeb; --ink-2: #9aa8a2; --rule: #26302c;
+  --bar: #0b221c; --bar-ink: #c9dad3; --accent: #5cc3a1; --accent-soft: #173a30;
+  --ok: #2f9a63; --ok-2: #36a86d; --ok-soft: #173326; --warn: #e5a74d; --warn-soft: #3a2c15; --miss: #c8653a; --miss-2: #d4724a;
+  --edge-1: #0c110f; --edge-2: #090d0b; --edge-3: #070a09; --lift: rgb(0 0 0 / .35); --lift-2: rgb(0 0 0 / .5);
+  color-scheme: dark } }
+
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.45 var(--font-ui) }
+a { color: var(--accent) }
+h1, h2 { margin: 0; letter-spacing: -.01em }
+h1 { font-size: 30px } h2 { font-size: 20px }
+.muted { color: var(--ink-2) }
+.skip-link { position: absolute; left: -999px }
+button { font: inherit; color: inherit }
+:focus-visible { outline: 3px solid #f2b84b; outline-offset: 2px }
+.row { display: flex; gap: 8px; align-items: center } .spread { justify-content: space-between }
+
+/* the top bar (templates/_bar.html), the same on every page */
+.skip-link:focus { left: 12px; top: 12px; z-index: 99; background: var(--sheet); padding: 8px 12px }
+.topnav { background: var(--bar); color: var(--bar-ink); display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; padding: 8px 18px; min-height: 52px;
+  position: sticky; top: 0; z-index: 40 }
+.topnav a { color: var(--bar-ink); text-decoration: none }
+.brand { display: flex; gap: 8px; align-items: center; font-weight: 700; color: #fff !important }
+.topnav-links { display: flex; flex-wrap: wrap; gap: 2px; font-size: 14px }
+.topnav-links a, .topnav-foot a { padding: 6px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px }
+.topnav-links a.on, .topnav-links a:hover, .topnav-foot a.on, .topnav-foot a:hover { background: rgb(255 255 255 / .12); color: #fff }
+.topnav-links small { font-size: 11px; padding: 0 7px; border-radius: 99px; background: rgb(255 255 255 / .16) }
+.topnav-links small.new { background: #f2b84b; color: #1b2a24 }
+.topnav-foot { margin-left: auto; display: flex; flex-wrap: wrap; gap: 2px; font-size: 13px; align-items: center }
+.topnav-foot .muted { color: var(--bar-ink); opacity: .7 }
+/* narrow, or at larger text: the bar wraps and scrolls away, keeping every link */
+@media (max-width: 860px) { .topnav { position: static; gap: 8px 14px } .topnav-foot { margin-left: 0 } }
+.bar-say:empty { display: none } .bar-say { color: #f2b84b; padding: 0 8px }
+.entities { display: flex; gap: 4px; align-items: center; flex-wrap: wrap }
+.filer { display: inline-flex; align-items: center; gap: 8px; padding: 5px 10px; border-radius: 8px; border: 0; background: none; color: var(--bar-ink); font-size: 13px; cursor: pointer }
+.filer:hover { background: rgb(255 255 255 / .06) } .filer.on { background: rgb(255 255 255 / .12); color: #fff }
+.filer i { width: 6px; height: 16px; border-radius: 3px; background: #5cc3a1 }
+.filer.tab-1 i { background: #d9a35a } .filer.tab-2 i { background: #a4a0f0 } .filer.tab-3 i { background: #e98aa4 }
+.filer:not(.on) i { opacity: .55 }
+.add-entity, .rename-entity { border: 1px dashed rgb(255 255 255 / .25); background: none; color: var(--bar-ink); border-radius: 8px; padding: 4px 9px; cursor: pointer; opacity: .75 }
+.rename-entity { border: 0 }
+.rename-box { padding: 5px 10px; border-radius: 8px; border: 1px solid #5cc3a1; background: rgb(255 255 255 / .08); color: var(--bar-ink); font: inherit; font-size: 13px }
+.demo-bar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: var(--warn-soft); border: 1px solid var(--warn); border-radius: 10px; padding: 8px 12px; font-size: 13px }
+.demo-bar > b { color: var(--warn); text-transform: uppercase; letter-spacing: .06em }
+.demo-bar > .row { margin-left: auto }
+.demo-bar button { min-height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; font-size: 13px }
+.demo-bar button.secondary { background: var(--sheet); color: var(--accent) }
+/* adding an entity, from the bar */
+:where(body:not(.pages)) .dialog { background: var(--sheet); color: var(--ink); border-radius: 14px; width: min(560px, 100%); box-shadow: 0 20px 60px rgb(0 0 0 / .25); max-height: 90vh; overflow: auto }
+:where(body:not(.pages)) .dialog > header, :where(body:not(.pages)) .dialog > footer { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px }
+:where(body:not(.pages)) .dialog > header { border-bottom: 1px solid var(--rule) } :where(body:not(.pages)) .dialog > footer { border-top: 1px solid var(--rule); justify-content: flex-end }
+:where(body:not(.pages)) .dialog .form { padding: 18px 20px; display: grid; gap: 14px }
+:where(body:not(.pages)) .dialog .field { display: grid; gap: 5px } :where(body:not(.pages)) .dialog .field label { font-size: 12px; font-weight: 600; color: var(--ink-2) }
+:where(body:not(.pages)) .dialog input, :where(body:not(.pages)) .dialog select { min-height: 40px; padding: 0 10px; border: 1px solid var(--rule); border-radius: 8px; font: inherit; background: var(--sheet); color: var(--ink) }
+:where(body:not(.pages)) .dialog footer button { min-height: 40px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer }
+:where(body:not(.pages)) .dialog footer button.secondary { background: var(--sheet); color: var(--accent) }
+:where(body:not(.pages)) .dialog .tip { font-size: 13px; color: var(--ink-2); margin: 0 }
+
+.page { max-width: 1360px; margin: 0 auto; padding: 28px 24px 56px; display: grid; gap: 18px }
+.page:focus { outline: none }
+.head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 8px 24px }
+.head small { color: var(--ink-2); font-size: 13px }
+.head p { margin: 0; font-size: 14px }
+:where(body:not(.pages)) .panel { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 20px; display: grid; gap: 10px; align-content: start }
+:where(body:not(.pages)) .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--accent);
+  background: var(--accent); color: #fff; font-weight: 600; font-size: 14px; text-decoration: none; cursor: pointer }
+:where(body:not(.pages)) .btn.ghost { background: transparent; color: var(--accent); border-color: var(--rule) }
+.x { border: 0; background: transparent; cursor: pointer; font-size: 16px; color: var(--ink-2); min-width: 32px; min-height: 32px; border-radius: 6px }
+.x:hover { background: var(--accent-soft) }
+
+.wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start }
+.deck-box { flex: 999 1 720px; min-width: 0; display: grid; gap: 14px }
+.side { flex: 1 1 280px; max-width: 360px; min-width: 0; display: grid; gap: 12px }
+.side .open { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 14px }
+.side .amount { font: 600 22px var(--font-mono); margin: 0 }
+
+/* the deck of years. The card in front is never turned: its text stays sharp and
+   its clicks land. The ones behind lean back and dim. The deck itself takes no clicks: in 3D,
+   cards set back sit behind it and it would swallow theirs. */
+.deck { position: relative; perspective: 2400px; perspective-origin: 50% -10%; transform-style: preserve-3d; pointer-events: none;
+  --tilt: 7deg; --fan: 40px; min-height: 320px }
+:where(body:not(.pages)) .card { position: absolute; left: 0; top: var(--fan); width: calc(100% - var(--spread, 0px)); pointer-events: auto; border-radius: 14px;
+  border: 1px solid var(--rule); background: linear-gradient(var(--sheet), var(--sheet-2)); transform-origin: 50% 100%;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .6), 1px 1px 0 var(--edge-1), 2px 2px 0 var(--edge-2), 3px 3px 0 var(--edge-3), 0 6px 14px var(--lift), 0 18px 40px rgb(16 32 26 / .06);
+  transform: translate3d(calc(var(--p) * var(--step, 30px)), calc(var(--p) * -36px), calc(var(--p) * -40px)) rotateX(var(--tilt));  /* no scale: on a tall card it would undo the fan */
+  filter: brightness(calc(1 - var(--p) * .015)) saturate(.75);
+  transition: transform .42s cubic-bezier(.2, .9, .25, 1.12), translate .25s ease, filter .4s, box-shadow .4s }
+/* the cards behind: as tall as the one in front, leaning back from their bottom edge (so no
+   part of them comes through it), their tabs left showing above them */
+:where(body:not(.pages)) .card:not(.front) { height: var(--h, 320px) }
+:where(body:not(.pages)) .card:not(.front) .body { height: 100%; overflow: hidden }
+:where(body:not(.pages)) .card:not(.front) .card-head span, :where(body:not(.pages)) .card:not(.front) .card-head .expect { visibility: hidden }
+:where(body:not(.pages)) .card.front { transform: none; filter: none; z-index: 20; box-shadow: inset 0 1px 0 rgb(255 255 255 / .6), 1px 1px 0 var(--edge-1), 2px 2px 0 var(--edge-2), 3px 3px 0 var(--edge-3), 0 10px 22px var(--lift), 0 36px 70px var(--lift-2) }
+:where(body:not(.pages)) .card.lift { z-index: 30; filter: none; transform: translate3d(calc(var(--from) * var(--step, 30px) / 2), -90px, 140px) rotateX(calc(var(--tilt) * -1)) scale(1.02);
+  box-shadow: 0 30px 50px var(--lift), 0 70px 110px var(--lift-2); transition: transform .3s cubic-bezier(.3, .7, .4, 1), box-shadow .3s }
+:where(body:not(.pages)) .card:not(.front):has(.tab:hover) { translate: 0 -10px }
+.tab { position: absolute; top: -34px; height: 34px; padding: 0 16px; display: flex; align-items: center; gap: 8px; border: 1px solid var(--rule); border-bottom: 0;
+  border-radius: 10px 10px 0 0; background: linear-gradient(var(--sheet), var(--sheet-2)); font: 800 15px var(--font-mono); cursor: pointer; white-space: nowrap }
+.tab::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 14px }  /* the raised card keeps its hover */
+.tab:hover { color: var(--accent) }
+.tab i { width: 9px; height: 9px; border-radius: 50%; background: var(--ok) }
+:where(body:not(.pages)) .card.front .tab, :where(body:not(.pages)) .card.lift .tab { background: var(--accent); border-color: var(--accent); color: #fff }
+:where(body:not(.pages)) .card.front .tab i, :where(body:not(.pages)) .card.lift .tab i { background: #fff }
+.body { padding: 18px 22px 22px; display: grid; gap: 12px; min-width: 0 }
+/* the grid scrolls inside the card, both ways, with the kinds along the top and the senders down
+   the side kept in view; the page scrolls only past the card */
+.grid-scroll { overflow: auto; min-width: 0; min-height: 0 }
+/* the front card is as tall as the window has room for, whatever its year holds (app.js sets
+   --card), so the deck keeps its size from year to year; a short year leaves white space */
+:where(body:not(.pages)) .card.front { background: var(--sheet); height: var(--card, auto) }  /* flat, so the kept-in-view headings match it */
+:where(body:not(.pages)) .card.front .body { height: 100%; grid-template-rows: auto minmax(0, 1fr); align-content: start }
+.grid-scroll .gh { position: sticky; top: 0; z-index: 2; background: var(--sheet) }
+.grid-scroll .who { position: sticky; left: 0; z-index: 1; background: var(--sheet) }
+.grid-scroll .gh span:first-child { position: sticky; left: 0; background: var(--sheet) }
+.card-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px }
+.card-head { align-items: center }
+/* the tab names the year: the heading is for screen readers only */
+.card-head h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap }
+
+/* the front card's grid: senders down, kinds across */
+:where(body:not(.pages)) .grid { display: grid; gap: 6px; min-width: max-content }
+.gr { display: grid; grid-template-columns: minmax(160px, 230px) repeat(var(--cols, 1), 84px); gap: 6px; align-items: center }  /* fixed: one kind isn't a long bar */
+.gh { font: 600 11px var(--font-mono); color: var(--accent); padding-bottom: 6px; border-bottom: 1px solid var(--rule) }
+.gh span { text-align: center } .gh span:first-child { text-align: left; font-family: var(--font-ui); color: var(--ink-2) }
+.who { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.sq { width: 100%; height: 30px; padding: 0 4px; border-radius: 6px; border: 0; cursor: pointer; font: 600 12px var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.sq:hover { filter: brightness(1.08) }
+.sq.on { box-shadow: 0 0 0 3px var(--ink) }
+.s-in { background: linear-gradient(var(--ok-2), var(--ok)); color: #fff; box-shadow: inset 0 1px 0 rgb(255 255 255 / .25), 0 1px 2px rgb(16 32 26 / .2) }
+.s-to_come { background: var(--ok-soft); color: var(--ok); outline: 1.5px dashed var(--ok); outline-offset: -1.5px }
+.s-missing { background: linear-gradient(var(--miss-2), var(--miss)); color: #fff; box-shadow: inset 0 1px 0 rgb(255 255 255 / .25), 0 1px 2px rgb(16 32 26 / .2) }
+.s-gap { background: var(--warn-soft); color: var(--miss); outline: 1.5px solid var(--miss); outline-offset: -1.5px }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 0; font-size: 13px; color: var(--ink-2) }
+.legend .k { display: inline-flex; align-items: center; gap: 6px; background: none; box-shadow: none; outline: 0; color: var(--ink-2) }
+.legend .k::before { content: ""; width: 16px; height: 12px; border-radius: 3px }
+.legend .s-in::before { background: var(--ok) } .legend .s-to_come::before { background: var(--ok-soft); outline: 1.5px dashed var(--ok) }
+.legend .s-missing::before { background: var(--miss) } .legend .s-gap::before { background: var(--warn-soft); outline: 1.5px solid var(--miss) }
+
+/* Noticed for you, beside the deck */
+.notes .note { border-top: 1px solid var(--rule); padding-top: 12px; display: grid; gap: 8px }
+.notes .note p { margin: 0; font-size: 14px }
+.notes .same { display: grid; gap: 4px; justify-items: start; padding: 8px 10px; border: 1px solid var(--rule); border-radius: 8px; font-size: 13px }
+.notes .same ul { margin: 0; padding-left: 18px }
+.notes .more { display: grid; gap: 12px } .notes .more summary { cursor: pointer; color: var(--accent); font-size: 14px; font-weight: 600 }
+.row.wrap { flex-wrap: wrap }
+:where(body:not(.pages)) .btn.small { min-height: 36px; padding: 0 12px; font-size: 13px }
+
+/* Across the years: the sender on every row, the account under it */
+.lede { margin: -8px 0 0; font-size: 14px; max-width: 860px }
+.small { font-size: 13px }
+.tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 13px }
+.tools input { flex: 1 1 260px; max-width: 380px; min-height: 40px; padding: 0 14px; border: 1px solid var(--rule); border-radius: 10px; font: inherit; background: var(--sheet); color: var(--ink) }
+:where(body:not(.pages)) .seg { display: inline-flex; gap: 4px }
+:where(body:not(.pages)) .seg button { border: 1px solid var(--rule); background: var(--sheet); border-radius: 99px; padding: 6px 14px; min-height: 36px; cursor: pointer }
+:where(body:not(.pages)) .seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff }
+:where(body:not(.pages)) .panel.flush { padding: 0; overflow: hidden }
+.scroll { overflow-x: auto }
+.ay { width: 100%; min-width: 900px; border-collapse: collapse; font-size: 14px }
+.ay thead th { text-align: left; font-size: 12px; font-weight: 600; color: var(--ink-2); padding: 12px; border-bottom: 1px solid var(--rule); white-space: nowrap }
+.ay td, .ay tbody th { padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: middle; text-align: left; font-weight: 400 }
+.ay tr.r:hover > * { background: var(--accent-soft) }
+.ay .who { max-width: 320px } .ay .who b { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.ay .who small { display: block; font-size: 12.5px; color: var(--ink-2) }
+.ay tr.under .who b { display: none } .ay tr.under .who small { font-size: 14px; color: var(--ink) } .ay tr.under .who { padding-left: 24px }
+.ay .kind { font: 600 12px var(--font-mono); color: var(--accent); white-space: nowrap }
+.ay .box { font-size: 13px; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.ay .num { text-align: right; font: 13px var(--font-mono); white-space: nowrap; position: relative }
+.gifts { margin-top: 18px } .gifts > header { padding: 14px 16px 4px } .gifts h2 { margin: 0 }
+.gifts .ay { width: auto; min-width: 0 } .gifts .ay .who { min-width: 260px } .gifts .ay .num { min-width: 64px }
+.gifts thead a { color: inherit; text-decoration: none } .gifts thead a:hover { text-decoration: underline }
+.ay tfoot th, .ay tfoot td { padding: 9px 12px; border-top: 2px solid var(--rule); text-align: left } .ay tfoot .num { text-align: right }
+.ay th.num { font-family: var(--font-ui) }
+.ay tr.group th { background: var(--sheet-2); font-size: 14px; font-weight: 700; color: var(--ink); padding: 14px 12px 6px }
+.ay .neg { color: #b3261e } .ay .mark { color: var(--ink-2) } .ay .m-missing { color: #b3261e } .ay .m-to_come { color: var(--accent) }
+.ay .note { display: block; font: 600 10.5px var(--font-ui); color: var(--accent) } .ay .note.big { color: var(--warn) }
+.ay td.conflict { background: var(--warn-soft) }
+.ay .acts { float: left; display: grid; grid-template-columns: auto auto; gap: 0 2px; justify-items: start }
+.ay .act { min-width: 26px; min-height: 26px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; font-size: 14px }
+.ay .act:hover { background: var(--accent-soft) }
+:where(body:not(.pages)) .link { border: 0; background: none; padding: 0 4px; color: var(--accent); cursor: pointer; font: 12px var(--font-ui) }
+.ay .acts .link { grid-column: 1 / -1 }
+.ay .peek { position: absolute; left: 8px; top: 50%; translate: 0 -50%; opacity: 0 }
+.ay td:hover .peek, .ay .peek:focus-visible { opacity: 1 }
+/* editing (A1-A3): a year's cell takes a typed amount; the box is a list; a row can go */
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%) }
+.say { margin: 0; font-size: 14px; color: var(--ink-2) } .say:empty { display: none }
+.ay td.ed { cursor: text }
+.ay td.ed:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px }
+.ay td.editing input, .ay .box input { width: 8em; font: 13px var(--font-mono); text-align: right; padding: 4px 6px; border: 1px solid var(--accent); border-radius: 6px; background: var(--sheet); color: var(--ink) }
+.ay .box input { text-align: left }
+.ay select.bx { max-width: 210px; font: 13px var(--font-ui); padding: 4px 6px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); color: var(--ink) }
+.ay td.rm { text-align: right } .ay .rm-row { opacity: 0 } .ay tr.r:hover .rm-row, .ay .rm-row:focus-visible, .ay .rm-row.confirm { opacity: 1 }
+.ay .rm-row.confirm { color: #b3261e; font-weight: 600 }
+.add-row label { display: inline-flex; gap: 8px; align-items: center; font-size: 14px }
+.add-row select, .add-row input { min-height: 36px; padding: 0 10px; border: 1px solid var(--rule); border-radius: 8px; font: inherit; background: var(--sheet); color: var(--ink); max-width: 420px }
+
+/* the viewer: pictures of the pages, never the file */
+.scrim { position: fixed; inset: 0; background: rgb(0 0 0 / .45); display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 50 }
+.viewer { background: var(--sheet); border-radius: 12px; width: min(980px, 100%); max-height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr) }
+/* the document viewer sits beside the page, docked left, nothing dimmed */
+#viewer.scrim { background: none; padding: 0; justify-content: flex-start; align-items: stretch; pointer-events: none }
+#viewer .viewer { pointer-events: auto; width: min(720px, 55vw); max-height: none; border-radius: 0 12px 12px 0; box-shadow: 0 10px 40px rgb(0 0 0 / .3); border-right: 1px solid var(--rule) }
+#viewer.wide .viewer { width: min(1100px, 85vw) }
+#viewer .viewer header .row { gap: 12px }
+@media (max-width: 640px) { #viewer .viewer, #viewer.wide .viewer { width: 100% } #vw-wide { display: none } }
+.viewer header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--rule) }
+.vw-pages { overflow: auto; padding: 16px; display: grid; gap: 16px; background: var(--paper) }
+.vw-pages img { width: 100%; height: auto; background: #fff; box-shadow: 0 1px 4px rgb(0 0 0 / .2) }
+
+@media (prefers-reduced-motion: reduce) { :where(body:not(.pages)) .card, :where(body:not(.pages)) .card.lift { transition: none } :where(body:not(.pages)) .card:not(.front):has(.tab:hover) { translate: none } }
+@media (max-width: 640px) { .page { padding: 20px 16px 40px } .deck { --tilt: 4deg } }
+
+/* Add documents as a factory: stations over a belt, a card per document. A document's
+   place on the belt is --x (0 to 1, its station's middle), --n its place in the waiting pile. */
+.drop { border: 2px dashed var(--edge-2); border-radius: 14px; background: var(--sheet); padding: 22px; display: grid; gap: 10px; justify-items: center; text-align: center }
+.drop.over { border-color: var(--accent); background: var(--accent-soft) }
+.drop .row { flex-wrap: wrap; justify-content: center }
+.drop .more { display: none }
+/* while documents go through: the words above and the big drop area fold
+   away, the steps lift and slide up into their place; the drop area stays as a slim bar */
+.lede, .drop { transition: max-height .45s ease, opacity .3s ease, margin .45s ease, padding .45s ease }
+.lede { max-height: 12em; overflow: hidden }
+.fx-on .lede { max-height: 0; opacity: 0; margin-top: 0; margin-bottom: 0 }
+.fx-on .drop { grid-auto-flow: column; justify-content: space-between; align-items: center; padding: 8px 16px; text-align: left }
+.fx-on .drop .full { display: none } .fx-on .drop .more { display: inline }
+.fx-on .factory { animation: fx-lift .55s cubic-bezier(.2, .8, .2, 1) both }
+@keyframes fx-lift {
+  from { transform: translateY(48px) scale(.985); box-shadow: 0 0 0 rgb(0 0 0 / 0) }
+  60% { box-shadow: 0 22px 48px rgb(0 0 0 / .22) }
+  to { transform: none; box-shadow: 0 6px 18px rgb(0 0 0 / .08) }
+}
+.belt { transition: height .4s ease }
+.belt.idle { height: 14px }
+.fx-say { margin: 0; min-height: 1em; font-size: 14px; color: var(--ink-2) }
+.factory { overflow-x: auto }
+.fx-line { min-width: 900px; display: grid; gap: 12px }
+.stations { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 8px }
+.st { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; padding: 10px 4px 8px; border-radius: 12px;
+  background: linear-gradient(var(--sheet), var(--sheet-2)); border: 1px solid var(--rule); color: var(--ink-2); transition: border-color .3s, color .3s }
+.st svg { width: 24px; height: 24px }
+.st b { font-size: 13px; color: var(--ink) }
+.st small { font-size: 11px; line-height: 1.3 }
+.st.on { color: var(--accent); border-color: var(--ok); animation: fx-pulse 1.2s ease-in-out infinite }
+.st.warn { color: var(--warn); border-color: var(--warn) }
+.st .tm { font-style: normal; font-size: 11px; font-weight: 600; color: var(--accent); min-height: 0; display: flex; align-items: center; gap: 5px }
+.st .tm:empty { display: none }
+.st .tm::before { content: ""; width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: fx-spin .8s linear infinite }
+@keyframes fx-spin { to { transform: rotate(1turn) } }
+.fx-busy { cursor: progress }
+/* while documents go through, the heading takes one line */
+.fx-on .head > div:first-child { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px }
+.fx-on .head h1 { font-size: 22px }
+.fx-on #fx-check { display: none }  /* its questions are answered on this page */
+@keyframes fx-pulse { 50% { box-shadow: 0 0 0 6px rgb(31 122 77 / .15) } }
+.belt { position: relative; height: 112px; border-radius: 14px; background: #2b3a34; overflow: hidden; box-shadow: inset 0 2px 6px rgb(0 0 0 / .45) }
+.belt.run { background-image: repeating-linear-gradient(90deg, rgb(255 255 255 / .05) 0 20px, transparent 20px 40px); animation: fx-belt .6s linear infinite }
+@keyframes fx-belt { to { background-position: 40px 0 } }
+:where(body:not(.pages)) .doc { position: absolute; top: 12px; left: calc(var(--x, 0) * 100% + var(--n, 0) * -6px); width: 64px; height: 86px; margin-left: -32px; border-radius: 5px;
+  background: #fff; box-shadow: 0 6px 14px rgb(0 0 0 / .35); transition: left .5s cubic-bezier(.3, .8, .3, 1.1), opacity .4s }
+:where(body:not(.pages)) .doc.wait { margin-left: 12px; opacity: .75 }
+:where(body:not(.pages)) .doc.out { opacity: 0 }
+:where(body:not(.pages)) .doc i { display: block; height: 3px; margin: 6px 8px 0; background: #dde3df; border-radius: 2px }
+:where(body:not(.pages)) .doc i:first-child { width: 60%; background: #c9d2cd }
+:where(body:not(.pages)) .doc .scan { display: none; position: absolute; left: 0; right: 0; height: 3px; background: #3fd18b; box-shadow: 0 0 10px #3fd18b; animation: fx-sweep .7s ease-in-out infinite alternate }
+:where(body:not(.pages)) .doc.scanning .scan { display: block }
+@keyframes fx-sweep { from { top: 6px } to { top: 76px } }
+:where(body:not(.pages)) .doc .stamp { position: absolute; left: 3px; right: 3px; bottom: 6px; padding: 2px 0; border: 1.5px solid var(--ok); border-radius: 4px; color: #1f6b57;
+  font: 700 9px var(--font-mono); text-align: center; transform: rotate(-6deg); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: #fff }
+:where(body:not(.pages)) .doc .stamp.ask { border-color: #b4501f; color: #b4501f }
+.pile { position: absolute; left: 12px; bottom: 6px; color: #dbe7e2; font: 600 12px var(--font-mono) }
+.fx-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px }
+.fx-card { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 14px 16px; display: grid; gap: 8px; align-content: start }
+.fx-card.now { border-color: var(--ok); box-shadow: 0 6px 18px var(--lift) }
+.fx-card header { display: flex; justify-content: space-between; gap: 8px; align-items: center }
+.fx-card .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px }
+.badge { flex: none; font-size: 12px; padding: 3px 9px; border-radius: 99px; background: var(--paper); color: var(--ink-2) }
+.badge.on { background: var(--accent-soft); color: var(--accent) }
+.badge.ok { background: var(--ok-soft); color: var(--ok) }
+.badge.ask { background: var(--warn-soft); color: var(--warn) }
+.badge.bad { background: #fbe5e3; color: #8c1d16 }
+.fx-card dl { margin: 0; display: grid; grid-template-columns: 96px minmax(0, 1fr); font-size: 13px }
+.fx-card dt, .fx-card dd { margin: 0; padding: 5px 0; border-top: 1px solid var(--rule) }
+.fx-card dt { color: var(--ink-2) }
+.fx-card dd.think { color: var(--ink-2); animation: fx-think 1s ease-in-out infinite }
+.fx-card dd.ask { color: var(--warn); font-weight: 600 }
+@keyframes fx-think { 50% { opacity: .35 } }
+@media (prefers-reduced-motion: reduce) {
+  .belt { display: none }
+  .lede, .drop, .belt { transition: none } .fx-on .factory { animation: none }
+  .st.on, .fx-card dd.think, .st .tm::before { animation: none }
+}
+
+/* the reading bench */
+.wrapping { flex-wrap: wrap; align-items: baseline }
+.bench h3 { margin: 0 0 2px; font-size: 14px; display: flex; gap: 8px; align-items: center }
+.bench-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 16px }
+.bench-cols > div { display: grid; gap: 6px; align-content: start }
+.sw { width: 10px; height: 10px; border-radius: 2px; background: var(--accent) }
+.sw.model { border-radius: 50%; background: #6250d6 }
+.sw.kept { transform: rotate(45deg); background: var(--ink) }
+.lines { display: grid; gap: 6px }
+.ln { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; padding: 7px 10px; border-radius: 8px; background: var(--sheet-2); font-size: 13px }
+.ln b { font: 600 13px var(--font-mono) }
+.ln small { grid-column: 1 / -1; color: var(--ink-2) }
+.ln.ok { background: var(--ok-soft) }
+.ln.ask { background: var(--warn-soft) }
+.ln.ask small { color: var(--warn) }
+.ln.ref small { color: var(--ink-2) }
+.lines .none { margin: 0; font-size: 13px; color: var(--ink-2) }
+.lines .think { animation: fx-think 1s ease-in-out infinite }
+.rk { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 7px 0; border-top: 1px solid var(--rule); font-size: 13px }
+.rk .mark { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 12px; background: var(--warn-soft); color: var(--warn) }
+.rk .mark.error { background: #fbe5e3; color: #8c1d16 }
+.rk code { font: 12px var(--font-mono); color: var(--ink-2) }
+.fx-card .name.pick { border: 0; background: none; padding: 0; text-align: left; cursor: pointer; font-weight: 700; color: var(--accent); text-decoration: underline; text-underline-offset: 3px }
+.fx-card.focus { outline: 2px solid var(--accent); outline-offset: 2px }
+@media (prefers-reduced-motion: reduce) { .lines .think { animation: none } }
+
+/* what doesn't come in the mail */
+.mrow { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--rule) }
+.mrow b { display: block; font-size: 15px }
+.mrow small { font-size: 13px }
+.mk { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: var(--warn-soft); color: var(--warn) }
+.mk.got, .mk.asked { background: var(--ok-soft); color: var(--ok) }
+.mbtns { flex-wrap: wrap; justify-content: flex-end }
+.mbtns .link { font-size: 13px }
+.said { font-size: 13px; color: var(--ink-2) }
+@media (max-width: 560px) { .mrow { grid-template-columns: 32px minmax(0, 1fr) } .mbtns { grid-column: 2; justify-content: flex-start } }
+.fx-say:empty, .fx-cards:empty { display: none }
+
+/* page help (help.py), and starting a year (templates/_years.html) */
+:where(body:not(.pages)) .help-pop { position: relative }
+:where(body:not(.pages)) .help-pop > summary { list-style: none; cursor: pointer; font-size: 13px; min-height: 36px; display: inline-flex; align-items: center; padding: 0 12px; border: 1px solid var(--rule); border-radius: 999px; background: var(--sheet) }
+:where(body:not(.pages)) .help-pop > summary::-webkit-details-marker { display: none }
+:where(body:not(.pages)) .help-pop > summary::before { content: "?"; width: 16px; height: 16px; margin-right: 6px; border-radius: 50%; background: var(--ink-2); color: var(--sheet); font-size: 11px; font-weight: 700; text-align: center; line-height: 16px }
+:where(body:not(.pages)) .help-pop .help-body { position: absolute; right: 0; top: calc(100% + 6px); z-index: 45; width: min(380px, calc(100vw - 32px)); padding: 12px 16px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; box-shadow: 0 10px 30px var(--lift); font-size: 13px; line-height: 1.5 }
+:where(body:not(.pages)) .help-pop .help-body p { margin: 0 0 8px } :where(body:not(.pages)) .help-pop .help-body .links { margin: 0 }
+:where(body:not(.pages)) .dialog.wide-dialog { width: min(760px, calc(100vw - 32px)) }
+.dialog-body { padding: 14px 20px; font-size: 14px }
+:where(body:not(.pages)) .dialog .link { font-size: 16px }
+:where(body:not(.pages)) table.carry { border-collapse: collapse; width: 100% } :where(body:not(.pages)) table.carry td { padding: 6px 8px; border-bottom: 1px solid var(--rule) }
+.small-text { font-size: 12.5px }
+@media (max-width: 700px) { :where(body:not(.pages)) .help-pop { position: static } :where(body:not(.pages)) .help-pop .help-body { left: 16px; right: 16px; width: auto } }
+.stages { display: grid; gap: 8px } .handoff { margin: 4px 0 14px; padding: 12px 0; border-block: 1px solid var(--rule) } .handoff .btn { text-align: center } .stages h3 { margin: 6px 0 0; font-size: 15px; display: flex; gap: 8px; align-items: center } .stages p { margin: 0 }
+.pill { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 99px; background: var(--ok-soft); color: var(--ok) } .pill.warn { background: var(--warn-soft); color: var(--warn) }
+
+/* a square's checklist rows in its side panel (the checklist folded into the card) */
+#sq-rows { display: grid; gap: 14px }
+.xrow { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--rule) }
+.xrow p { margin: 0 } .xrow .pill { white-space: nowrap }
+.xrow .rf { display: grid; grid-template-columns: 5.5em minmax(0, 1fr); align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2) }
+.xrow input { min-height: 34px; padding: 0 8px; border: 1px solid var(--rule); border-radius: 6px; font: inherit; font-size: 14px; background: var(--sheet); color: var(--ink); min-width: 0 }
+.xrow .why input { flex: 1 1 10em }
+.xrow .bxf { display: grid; gap: 2px } .xrow .bxf small { padding-left: 80px; font-size: 12px }
+.xrow select.pick-box { min-height: 34px; padding: 0 6px; border: 1px solid var(--rule); border-radius: 6px; font: inherit; font-size: 13px; background: var(--sheet); color: var(--ink); min-width: 0 }
+.xrow .row.wrap { gap: 8px } .xrow .rm-row { font-size: 13px; padding: 0 }
+.xrow .rm-row.confirm, .away .again.confirm { color: #b3261e; font-weight: 600 }
+.away summary { cursor: pointer; color: var(--accent); font-size: 14px; font-weight: 600 }
+.away .open { margin-top: 8px }
+:where(body:not(.pages)) .dialog .newtype { display: grid; gap: 14px; padding: 12px; border: 1px dashed var(--rule); border-radius: 8px }
+:where(body:not(.pages)) .dialog .newtype h3 { margin: 0; font-size: 14px }
+/* a row's other boxes: an arrow opens them as sub-rows beneath it */
+.ay .open-sub { float: left; width: 24px; height: 24px; margin: 6px 6px 0 -10px; font-size: 15px; line-height: 1; color: var(--ink-2); position: relative; border-radius: 6px }
+.ay .open-sub:hover { background: var(--accent-soft); color: var(--accent) }
+.ay .open-sub::before { content: ""; display: block; width: 7px; height: 7px; margin: 0 auto; border: solid currentColor; border-width: 0 2px 2px 0; rotate: -45deg; transition: rotate .15s }
+.ay .open-sub[aria-expanded="true"]::before { rotate: 45deg }
+.ay .open-sub.doubt::after { content: ""; position: absolute; top: 2px; right: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--warn) }
+.ay tr.sub > * { background: var(--sheet-2); border-bottom-style: dashed }
+.ay tr.sub .who { padding-left: 40px; font-size: 13px; color: var(--ink-2) }
+.ay tr.sub > td.conflict { background: var(--warn-soft) }
+/* Questions for you on Add documents */
+.asks .ask { display: grid; gap: 8px; padding: 14px 0; border-top: 1px solid var(--rule) }
+.asks .ask:target { outline: 2px solid var(--warn); outline-offset: 4px; border-radius: 8px }
+.asks .what b { display: block } .asks .what small { display: block; font-size: 13px }
+.asks .ask-box { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; background: var(--warn-soft) }
+.asks .ask-box .q { flex: 1 1 100%; font-size: 13px; color: var(--warn) }
+.asks .pick { font: inherit; font-size: 14px; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 8px; background: var(--sheet); color: var(--ink); max-width: 280px }
+.asks .pick.year { width: 7em } .asks .pick.num { width: 9em; font-family: var(--font-mono); text-align: right }
+.asks .abox { flex: 1 1 100%; display: grid; gap: 6px }
+.asks .acts { gap: 14px; font-size: 13px }
+.fx-card a.badge[href] { text-decoration: none; cursor: pointer }
+/* For my preparer: the year's papers, and the dialog that adds them */
+.papers .open { margin: 0 } .papers .pp-what input { min-height: 32px; padding: 0 8px; border: 1px solid var(--rule); border-radius: 6px; font: inherit; width: 100% }
+.papers button.link.danger:not(.confirm) { color: var(--bad, #b3261e) }
+.pp-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px }
+.pp-list label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }

@@ -1,0 +1,24 @@
+# §5.5 donation (securities to DAF); `year` added (base field)
+id: 2025/donations/2025-10-04.daf-stock
+year: 2025
+category: donation
+date: 2025-10-04
+payee: GiftWell
+amount: 12511.20
+assertions:
+  - { value: 12380.40, source: "hand:summary", kind: hand_summary }
+  - { value: 12511.20, source: "hand:gifts", kind: hand_entry }
+resolved: null
+donation:
+  type: securities
+  security: "<ticker>"
+  shares: 232
+  cost_basis_per_share: 26.30
+  acquired: 2020-09-11
+  holding_period: long_term
+  fmv_method: high_low_average
+  to_daf: true
+requirements:
+  - { id: written_acknowledgment_daf, rule: R-DON-03 }
+  - { id: form_8283_section_a, rule: R-DON-02 }
+  - { id: brokerage_transfer_confirmation, rule: R-DON-05 }

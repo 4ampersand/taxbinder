@@ -1,0 +1,10 @@
+# §5.1
+id: fernhollow-properties
+name: Fernhollow properties
+kind: real_estate_sponsor
+portal:
+  url: https://example-investor-portal.com
+typical_release: { month: 3, day: 31 }
+aliases: []
+lineage: []
+notes: ""

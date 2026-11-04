@@ -1,0 +1,102 @@
+{% extends "page.html" %}
+{% block title %}Donations {{ year }}{% endblock %}
+{% block heading %}Donations · {{ year }}{% endblock %}
+{% block actions %}<button id="add-gift-open" type="button">＋ Add a donation</button>{% endblock %}
+{% block content %}
+<div class="tiles">
+  <div class="tile"><small>Given in {{ year }}</small><b class="num">${{ '{:,.2f}'.format(totals.total) }}</b><small>{{ rows|length }} gift{{ 's' if rows|length != 1 }}</small></div>
+  <div class="tile"><small>Cash, check, card</small><b class="num">${{ '{:,.2f}'.format(totals.cash) }}</b><small>&nbsp;</small></div>
+  <div class="tile"><small>Stock and property</small><b class="num">${{ '{:,.2f}'.format(totals.noncash) }}</b><small>&nbsp;</small></div>
+  <div class="tile"><small>Paperwork missing</small><b class="num {{ 'warn' if totals.letters_missing or totals.forms_missing }}">{{ totals.letters_missing + totals.forms_missing }}</b><small>{{ totals.letters_missing }} letter(s) · {{ totals.forms_missing }} transfer / gift record(s)</small></div>
+</div>
+
+<div class="toolbar">
+  <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="donations-q" type="search" placeholder="Search charities…" aria-label="Search donations"></label>
+  <div class="chips" data-chips="donations">
+    <button class="chip on" data-filter="">All<b>{{ rows|length }}</b></button>
+    <button class="chip" data-filter="missing">Paperwork missing<b>{{ rows|selectattr('needs_paperwork')|list|length }}</b></button>
+  </div>
+  <div class="row small-text">
+    <label class="muted" for="donations-group">Group by</label>
+    <select class="select" id="donations-group" data-grid-group="donations"><option value="">No grouping</option><option value="charity">Charity</option><option value="kind">Kind</option></select>
+    <div class="menu-wrap"><button class="secondary small" type="button" data-grid-columns="donations" aria-expanded="false">⚙︎ Columns</button></div>
+  </div>
+</div>
+
+<input type="file" id="rowfile" class="hidden" accept=".pdf,.png,.jpg,.jpeg,.heic,.html,.htm">
+<div class="table-wrap">
+<table class="grid compact" data-table="donations" data-year="{{ year }}">
+  <thead><tr>
+    <th data-col="date" data-w="110" data-sort-type="date">Date</th>
+    <th data-col="charity" data-w="180" data-flex>Charity</th>
+    <th data-col="amount" data-w="120" data-sort-type="num" class="r">Amount</th>
+    <th data-col="paper" data-w="220">Paperwork</th>
+    <th data-col="kind" data-w="170">Kind</th>
+    <th data-col="letter" data-w="130" data-hidden>Letter</th>
+    <th data-col="records" data-w="150" data-hidden>Transfer / gift records</th>
+    <th data-col="security" data-w="160" data-hidden>Security</th>
+    <th data-col="actions" data-w="210" data-locked class="r"></th>
+  </tr></thead>
+  <tbody>
+  {% for r in rows %}{% set c = r.c %}
+  {% set d = c.donation %}
+  <tr data-id="{{ c.id }}" data-status="{{ 'missing' if r.needs_paperwork else 'ok' }}" data-text="{{ (c.payee ~ ' ' ~ r.kind ~ ' ' ~ c.amount)|lower }}" data-g-charity="{{ c.payee }}" data-g-kind="{{ r.kind }}"
+      data-payee="{{ c.payee }}" data-date="{{ c.date }}" data-amount="{{ c.amount }}" data-kind="{{ d.type }}" data-daf="{{ 1 if d.to_daf else '' }}" data-qpq="{{ 1 if d.quid_pro_quo else '' }}"
+      data-security="{{ d.security or '' }}" data-shares="{{ d.shares or '' }}" data-basis="{{ d.cost_basis_per_share or '' }}" data-acquired="{{ d.acquired or '' }}">
+    <td class="num" data-sort="{{ c.date.isoformat() }}">{{ c.date.strftime('%b %-d, %Y') }}</td>
+    <td class="c-src" title="{{ c.payee }}">{{ c.payee }}</td>
+    <td class="r num" data-sort="{{ c.amount }}">{{ '{:,.2f}'.format(c.amount) }}</td>
+    {% set paper = r.paperwork %}
+    <td title="Gifts of $250 or more need the charity's letter; stock and property gifts also need the transfer or gift records your tax preparer uses"><span class="pill {{ paper[1] }}">{{ paper[0] }}</span></td>
+    <td title="{{ r.kind }}">{{ r.kind }}</td>
+    <td><span class="pill {{ r.letter[2] }}">{{ r.letter[1] }}</span></td>
+    <td><span class="pill {{ r.records[2] }}">{{ r.records[1] }}</span></td>
+    <td class="muted">{{ d.security or '' }}{% if d.shares %} · {{ d.shares }} sh{% endif %}</td>
+    <td class="actions"><div class="acts">
+      {% if r.letter[0] == 'missing' %}<button class="small act-upload" data-as="donation_ack" type="button">Upload letter</button>
+      {% elif r.records[0] == 'missing' %}<button class="small act-upload" data-as="form_8283_support" type="button" title="From your broker: the transfer confirmation showing the shares, date and cost basis">Upload {{ r.record_name }}</button>{% endif %}
+      <div class="menu-wrap">
+        <button class="link row-menu" type="button" aria-label="More actions for {{ c.payee }}" aria-expanded="false">•••</button>
+        <div class="menu" hidden>
+          <button class="item act-upload" data-as="donation_ack" type="button">Attach a letter</button>
+          {% if r.noncash %}<button class="item act-upload" data-as="form_8283_support" type="button">Attach {{ r.record_name }}</button>{% endif %}
+          <button class="item act-upload" data-as="none" type="button">Attach another document</button>
+          {% if r.files %}<button class="item act-download" data-ids="{{ r.files|join(',') }}" type="button">Download files ({{ r.files|length }})</button>{% endif %}
+          <button class="item act-gift-edit" type="button">Edit…</button>
+          <button class="item danger act-gift-delete" type="button">Delete{{ ' (files stay in the vault)' if r.files }}</button>
+        </div>
+      </div>
+    </div></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="9" class="muted">No donations recorded for {{ year }}. Use <b>Add a donation</b>.</td></tr>
+  {% endfor %}
+  </tbody>
+  <tfoot><tr class="totals">
+    <td data-c="date">Total</td><td data-c="charity"></td><td data-c="amount" class="r num" data-total="amount"></td>
+    <td data-c="paper"></td><td data-c="kind"></td><td data-c="letter"></td><td data-c="records"></td><td data-c="security"></td><td data-c="actions"></td>
+  </tr></tfoot>
+</table>
+</div>
+<p class="tip">Keep the charity's letter for any gift of $250 or more. For stock, also keep your broker's record of the transfer (it shows the shares, the date and what you paid for them). Your tax preparer does the forms.</p>
+
+<div class="scrim" id="add-gift" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="add-gift-title">
+    <header><h2 id="add-gift-title" data-add="Add a donation" data-edit="Edit donation">Add a donation</h2><button class="link" type="button" data-close="add-gift" aria-label="Close">✕</button></header>
+    <div class="form">
+      <div class="field wide"><label for="g-payee">Charity</label><input id="g-payee" list="g-charities" placeholder="e.g. PUBLICRADIO"><datalist id="g-charities">{% for n in charities %}<option value="{{ n }}">{% endfor %}</datalist></div>
+      <div class="field"><label for="g-date">Date</label><input id="g-date" type="date"></div>
+      <div class="field"><label for="g-amount">Amount <span class="muted">(value, for stock)</span></label><input id="g-amount" class="num" inputmode="decimal" placeholder="$0.00"></div>
+      <div class="field wide"><label for="g-kind">Kind</label><select id="g-kind">{% for k, label in kinds.items() %}<option value="{{ k }}">{{ label }}</option>{% endfor %}</select></div>
+      <div class="field sec-only" hidden><label for="g-security">Security</label><input id="g-security" placeholder="e.g. AAPL"></div>
+      <div class="field sec-only" hidden><label for="g-shares">Shares</label><input id="g-shares" class="num" inputmode="decimal"></div>
+      <div class="field sec-only" hidden><label for="g-basis">Cost basis per share</label><input id="g-basis" class="num" inputmode="decimal" placeholder="$0.00"></div>
+      <div class="field sec-only" hidden><label for="g-acquired">Acquired on</label><input id="g-acquired" type="date"></div>
+      <label class="field wide check"><span><input id="g-daf" type="checkbox"> To my donor-advised fund (the DAF's sponsor sends the letter)</span></label>
+      <label class="field wide check"><span><input id="g-qpq" type="checkbox"> I received something in return (a dinner, a gift)</span></label>
+      <div class="field wide add-only"><label for="g-file">The charity's letter / receipt <span class="muted">(optional)</span></label><input id="g-file" type="file" accept=".pdf,.png,.jpg,.jpeg,.heic,.html,.htm"></div>
+    </div>
+    <footer><button class="secondary" type="button" data-close="add-gift">Cancel</button><button id="g-add" type="button">Add donation</button></footer>
+  </div>
+</div>
+{% endblock %}

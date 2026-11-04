@@ -1,0 +1,153 @@
+{% extends "page.html" %}
+{% block title %}Documents{% endblock %}
+{% block heading %}Documents{% if not all_years %} · {{ year }}{% endif %}{% endblock %}
+{% block content %}
+<div class="cols">
+  <section class="card">
+    <h2>Add documents you already have</h2>
+    <p class="tip">Files or a whole folder, from any year; a file already added is skipped.</p>
+    <p><a class="btn" href="/add">Add documents</a></p>
+  </section>
+  {% if not remote %}<section class="card">
+    <h2>Get documents from a portal</h2>
+    <div class="row portal-row small-text">
+      <input id="url" type="url" placeholder="https://investor-portal.example.com" autocomplete="off">
+      <button id="open" type="button">Open portal window</button>
+      <button id="save" class="secondary" type="button">Save page from portal window</button>
+    </div>
+    <p class="tip">Sign in inside the portal window; anything you download there is filed, matched and checked automatically. For portals that only display the PDF, use Save Page (⌘⇧S in the portal window).</p>
+  </section>{% endif %}
+</div>
+
+{% for t, n in own_returns %}<div class="notice row spread">
+  <span>Your type <b>{{ t.name }}</b> ({{ n }} document{{ 's' if n != 1 }}) looks like tax returns. TaxBinder now has its own <b>Tax return</b> type, with a Returns section for each year.</span>
+  <button class="small merge-type" type="button" data-from="{{ t.id }}" data-to="tax_return">Use Tax return</button>
+</div>{% endfor %}
+{% include "_returns.html" %}
+
+<div class="toolbar">
+  <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="documents-q" type="search" placeholder="Search file, type, match…" aria-label="Search documents"></label>
+  <div class="chips" data-chips="documents">
+    <button class="chip on" data-filter="">All<b>{{ docs|length }}</b></button>
+    <button class="chip" data-filter="unmatched">Not matched<b>{{ unmatched }}</b></button>
+  </div>
+  <div class="row small-text">
+    <label class="muted" for="documents-year">Year</label>
+    <select class="select" id="documents-year">
+      {% for y, n in year_counts %}<option value="{{ y }}"{{ ' selected' if y == year and not all_years }}>{{ y }} ({{ n }})</option>{% endfor %}
+      <option value="all"{{ ' selected' if all_years }}>All years ({{ total }})</option>
+    </select>
+    {% if unmatched %}<span class="warn">{{ unmatched }} not matched</span>{% endif %}
+    {% if unmatched %}<button id="rematch" class="secondary small" type="button">Re-match unmatched</button>{% endif %}
+    <button id="dl-selected" class="secondary small" type="button" disabled><span>Download selected (<span id="dl-count">0</span>)</span></button>
+    <button id="del-selected" class="secondary small danger" type="button" disabled>Delete selected</button>
+    {% if not remote %}<button id="chat-prep" class="secondary small" type="button" disabled title="Selected documents with personal details replaced, to paste into an AI chat">Prepare for chat</button>{% endif %}
+    <label class="muted" for="documents-group">Group by</label>
+    <select class="select" id="documents-group" data-grid-group="documents"><option value="">No grouping</option><option value="type">Type</option><option value="year">Year</option></select>
+    <div class="menu-wrap"><button class="secondary small" type="button" data-grid-columns="documents" aria-expanded="false">⚙︎ Columns</button></div>
+  </div>
+</div>
+<div class="table-wrap">
+<table class="grid compact" data-table="documents">
+  <thead><tr>
+    <th data-col="pick" data-w="38" data-locked><input type="checkbox" id="dl-all" aria-label="Select all"></th>
+    <th data-col="file" data-w="320" data-flex>File</th>
+    <th data-col="type" data-w="130">Type</th>
+    <th data-col="year" data-w="70" data-sort-type="num">Year</th>
+    <th data-col="from" data-w="220">From</th>
+    <th data-col="for" data-w="180">For</th>
+    <th data-col="match" data-w="300">Matched to</th>
+    <th data-col="added" data-w="140" data-sort-type="date">Added</th>
+    <th data-col="via" data-w="110">Via</th>
+    <th data-col="id" data-w="150" data-hidden>Document id</th>
+    <th data-col="actions" data-w="70" data-locked class="r"></th>
+  </tr></thead>
+  <tbody>
+  {% for d in docs %}{% set c = d.classification %}{% set paper = 'for-preparer' in d.tags %}{% set t = 'For my preparer' if paper else labels.get(c.doc_type, c.doc_type) if c and c.doc_type else 'Unclassified' %}
+  <tr data-id="{{ d.id }}" data-name="{{ d.original_filename }}" data-type="{{ c.doc_type if c and c.doc_type else '' }}" data-year="{{ c.tax_year if c and c.tax_year else '' }}" data-linked="{{ linked.get(d.id, [])|join(',') }}" data-status="{{ 'matched' if paper or d.id in linked or (c and c.doc_type in ('tax_return', 'return_paper')) else 'unmatched' }}" data-note="{{ d.preparer_note or '' }}" data-text="{{ (d.original_filename ~ ' ' ~ t ~ ' ' ~ (c.source or '') ~ ' ' ~ d.id)|lower }}" data-g-type="{{ t }}" data-whose="{{ d.recipient.taxpayers|join(',') if d.recipient else '' }}" data-issuer="{{ issuer_of.get(d.id, '') }}" data-acct="{{ acct_of.get(d.id, '') }}" data-printed="{{ d.recipient.printed or '' if d.recipient else '' }}" data-g-year="{{ c.tax_year if c and c.tax_year else 'No year' }}">
+    <td><input type="checkbox" class="dl-pick" value="{{ d.id }}" aria-label="Select {{ d.original_filename }}"></td>
+    <td class="c-src" title="{{ d.original_filename }}{% if d.version.supersedes %} · replaces {{ d.version.supersedes }}{% endif %}{% if d.reacquired %} · {{ d.reacquired|length }} more copies{% endif %}"><button class="link doc-name" type="button" data-view="{{ d.id }}">{{ d.original_filename }}</button>{% if d.version.supersedes %} <span class="pill info" title="Replaces {{ d.version.supersedes }}">corrected</span>{% endif %}{% if d.id in replaced %} <span class="pill">replaced</span>{% endif %}{% if d.scanned %} <span class="pill warn" title="Read from a scan or photo on this Mac: check what was read">scanned</span>{% endif %}</td>
+    <td>{{ t }}</td>
+    <td class="num">{{ c.tax_year if c and c.tax_year else '' }}{% if c and c.fiscal_year_end %} <span class="pill warn" title="A fiscal-year K-1: filed under the year its tax year ends. Check the year.">fiscal year to {{ c.fiscal_year_end.strftime('%m/%Y') }}</span>{% endif %}</td>
+    <td>{{ sent_by.get(d.id, '') }}</td>
+    {% set r = d.recipient %}{% if r and r.ask %}<td class="warn"><button class="link act-whose" type="button" title="Addressed to {{ r.printed }}: say whose it is">Whose? {{ r.printed }}</button></td>
+    {% else %}<td>{{ for_whom.get(d.id, '') }}{% if d.id in movable %} <button class="link act-move" type="button" data-to="{{ movable[d.id][0] }}">Move to {{ movable[d.id][1] }}’s vault</button>{% endif %}</td>{% endif %}
+    {% if paper %}<td class="muted" title="Handed to your preparer as it is">{{ d.preparer_note or 'for my preparer' }}</td>
+    {% elif d.tax_return and c and c.doc_type in ('tax_return', 'return_paper') %}<td class="muted">in Returns · {{ d.tax_return.form }}</td>
+    {% else %}<td class="{{ '' if d.id in linked else 'warn' }}" title="{{ ', '.join(linked.get(d.id, [])) }}">{{ ', '.join(linked.get(d.id, [])) or 'not matched' }}</td>{% endif %}
+    {% set last = d.reacquired[-1] if d.reacquired else none %}
+    <td class="muted num" data-sort="{{ d.acquired.at.isoformat() }}" title="{% if last %}Downloaded again {{ d.reacquired|length }} time(s), last {{ last.at.astimezone().strftime('%Y-%m-%d %H:%M') }} ({{ last.via }}); the vault keeps one copy{% endif %}">{{ d.acquired.at.strftime('%Y-%m-%d %H:%M') }}{% if last %} <span class="again">↻ {{ last.at.astimezone().strftime('%b %-d') }}</span>{% endif %}</td>
+    <td class="muted">{{ d.acquired.via }}</td>
+    <td class="muted"><code>{{ d.id }}</code></td>
+    <td class="actions"><div class="acts"><div class="menu-wrap">
+      <button class="link row-menu" type="button" aria-label="More actions for {{ d.original_filename }}" aria-expanded="false">•••</button>
+      <div class="menu" hidden>
+        <button class="item" type="button" data-view="{{ d.id }}">View</button>
+        <button class="item act-doc-edit" type="button">Edit…</button>
+        {% if paper %}<button class="item act-pp-unmark" type="button">Not for my preparer</button>{% else %}<button class="item act-pp-mark" type="button">For my preparer…</button>{% endif %}
+        <button class="item act-download" data-ids="{{ d.id }}" type="button">Download</button>
+        <button class="item danger act-doc-delete" type="button">Delete</button>
+      </div>
+    </div></div></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="11" class="muted">No documents yet. Upload some above, or open a portal window.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<div class="scrim" id="edit-doc" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="edit-doc-title">
+    <header><h2 id="edit-doc-title">Edit document</h2><button class="link" type="button" data-close="edit-doc" aria-label="Close">✕</button></header>
+    <div class="form">
+      <p class="field wide muted" id="ed-name"></p>
+      <div class="field"><label for="ed-type">What it is</label><select id="ed-type"><option value="">Unclassified</option>{% for k, label in labels.items()|sort(attribute=1) %}<option value="{{ k }}">{{ label }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="ed-year">Tax year</label><input id="ed-year" class="num" inputmode="numeric" placeholder="e.g. {{ year }}"></div>
+      <div class="field"><label for="ed-issuer">Who sent it</label><input id="ed-issuer" list="ed-senders" autocomplete="off"><datalist id="ed-senders">{% for n in senders %}<option value="{{ n }}">{% endfor %}</datalist></div>
+      <div class="field"><label for="ed-account">Account number</label><input id="ed-account" autocomplete="off" aria-describedby="ed-account-now"><small class="muted" id="ed-account-now"></small></div>
+      <div class="field wide"><span class="label-like">Whose it is</span><div id="ed-whose" class="check-list">{% for p in people %}<label><input type="checkbox" value="{{ p.id }}"> {{ p.name }}{% if p.kind != 'individual' %} <span class="muted">({{ p.kind }})</span>{% endif %}</label>{% endfor %}</div></div>
+      <div class="field wide"><span class="label-like">Attached to <span class="muted">(untick to detach)</span></span><div id="ed-linked" class="check-list"></div></div>
+      <div class="field wide"><label for="ed-attach">Also attach to <span class="muted">({{ year }})</span></label><input id="ed-attach" list="ed-targets" placeholder="Start typing a row, payment or gift…"><datalist id="ed-targets">{% for t in targets %}<option value="{{ t }}">{% endfor %}</datalist></div>
+    </div>
+    <footer><button class="secondary" type="button" data-close="edit-doc">Cancel</button><button id="ed-save" type="button">Save</button></footer>
+  </div>
+</div>
+
+<div class="scrim" id="whose-dlg" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="whose-title">
+    <header><h2 id="whose-title">Whose is this?</h2><button class="link" type="button" data-close="whose-dlg" aria-label="Close">✕</button></header>
+    <div class="form">
+      <p class="field wide">It’s addressed to <strong id="wh-printed"></strong>. Tick who it’s for: one person, both of you, or a trust.</p>
+      <div class="field wide check-list" id="wh-people">{% for p in people %}<label><input type="checkbox" value="{{ p.id }}"> {{ p.name }}{% if p.kind != 'individual' %} <span class="muted">({{ p.kind }})</span>{% endif %}</label>{% endfor %}
+        <label id="wh-new-trust-row"><input type="checkbox" id="wh-new-trust"> A trust not listed: <span id="wh-trust-name"></span></label></div>
+    </div>
+    <footer><button class="secondary" type="button" data-close="whose-dlg">Cancel</button><button id="wh-save" type="button">Save</button></footer>
+  </div>
+</div>
+
+<div class="scrim" id="chat-dlg" hidden>
+  <div class="dialog wide-dialog" role="dialog" aria-modal="true" aria-labelledby="chat-title">
+    <header><h2 id="chat-title">Prepare for chat</h2><button class="link" type="button" data-close="chat-dlg" aria-label="Close">✕</button></header>
+    <div class="form">
+      <p class="field wide" id="chat-summary"></p>
+      <ul class="field wide warn-list" id="chat-problems" hidden></ul>
+      <textarea class="field wide mono-area" id="chat-text" rows="16" readonly></textarea>
+      <p class="field wide muted small-text">Skim it before pasting. Placeholders are explained at the top of the text. To read the answer with real values, use <a href="/privacy">Privacy → Translate an answer</a>.</p>
+    </div>
+    <footer><button class="secondary" type="button" id="chat-save">Save to Downloads</button><button type="button" id="chat-copy">Copy</button></footer>
+  </div>
+</div>
+<div class="scrim" id="pp-mark" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="pp-mark-title">
+    <header><h2 id="pp-mark-title">For my preparer</h2><button class="link" type="button" data-close="pp-mark" aria-label="Close">✕</button></header>
+    <div class="form">
+      <p class="field wide muted" id="pm-name"></p>
+      <p class="field wide muted small-text">Handed to your preparer as it is, named by your note. TaxBinder stops reading it and asking about it.</p>
+      <div class="field"><label for="pm-year">Tax year</label><input id="pm-year" class="num" inputmode="numeric" value="{{ year }}"></div>
+      <div class="field wide"><label for="pm-note">What it’s for <span class="muted">(optional)</span></label><input id="pm-note" maxlength="120" placeholder="e.g. FBAR: savings, highest balance"></div>
+    </div>
+    <footer><button class="secondary" type="button" data-close="pp-mark">Cancel</button><button type="button" id="pm-save">Save</button></footer>
+  </div>
+</div>
+{% endblock %}

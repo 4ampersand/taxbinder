@@ -1,0 +1,13 @@
+{# For my preparer: papers handed over as they are, each with a note. #}
+<div class="scrim" id="papers" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="pp-title">
+    <header><h2 id="pp-title">For my preparer, <span id="pp-year"></span></h2><button class="link" type="button" data-close="papers" aria-label="Close">✕</button></header>
+    <div class="form">
+      <p class="tip">Papers your preparer needs that no form covers: statements for an FBAR, a letter, a closing statement. They go in the preparer’s files as they are, named by your note. TaxBinder doesn’t read or check them.</p>
+      <div class="field"><label for="pp-files">Files</label><input type="file" id="pp-files" multiple accept=".pdf,.png,.jpg,.jpeg,.heic,.html,.htm"></div>
+      <ol class="pp-list" id="pp-list"></ol>
+      <p class="small" id="pp-say" role="status"></p>
+    </div>
+    <footer><button class="secondary" type="button" data-close="papers">Cancel</button><button id="pp-go" type="button" disabled>Add</button></footer>
+  </div>
+</div>

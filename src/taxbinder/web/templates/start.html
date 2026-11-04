@@ -1,0 +1,38 @@
+{% extends "page.html" %}
+{% block crumb %}Start{% endblock %}
+{% block heading %}{% if mode == 'restore' %}Restore from a backup{% elif mode == 'unlock' or kind == 'nokey' %}Unlock your binder{% elif kind == 'new' %}Welcome to TaxBinder{% else %}Your binder didn't open{% endif %}{% endblock %}
+{% block content %}
+{# Start: in place of every page while there's no vault to show. #}
+<section class="card welcome">
+{% if mode == 'restore' %}
+  <p class="muted">Bring back your binder from a backup file (.tbak) made by TaxBinder, with all its documents, history and filers. You need the recovery key you saved when you set it up.</p>
+  <div class="form start-form">
+    <div class="field wide"><label for="restore-file">Backup file</label><input type="file" id="restore-file" accept=".tbak"></div>
+    <div class="field wide"><label for="restore-key">Recovery key</label><input type="password" id="restore-key" autocomplete="off" spellcheck="false" placeholder="AGE-SECRET-KEY-…"></div>
+  </div>
+  <div class="row"><button type="button" id="restore-go">Restore</button><a href="/">Back</a></div>
+{% elif mode == 'unlock' or kind == 'nokey' %}
+  {% if kind == 'new' %}<p>There's no binder on this Mac to unlock. A recovery key puts the key back for a binder that is still here; on its own it can't bring documents back. To bring them back, <a href="/start/restore">restore a backup</a>.</p>
+  {% else %}<p class="muted">{{ problem }} Type the recovery key you saved when you set it up, and TaxBinder puts the key back.</p>{% endif %}
+  <div class="form start-form">
+    <div class="field wide"><label for="unlock-key">Recovery key</label><input type="password" id="unlock-key" autocomplete="off" spellcheck="false" placeholder="AGE-SECRET-KEY-…"></div>
+  </div>
+  <div class="row"><button type="button" id="unlock-go"{{ ' disabled' if kind == 'new' }}>Unlock</button>{% if kind == 'new' %}<a href="/">Back</a>{% endif %}</div>
+  {% if kind == 'nokey' %}<p class="links">Lost the recovery key too? Then this binder can't be opened: everything in it is encrypted, and only that key or this Mac's old key opens it. A backup needs one of them as well.</p>{% endif %}
+{% elif kind == 'new' %}
+  <p class="muted">Keep your household's tax documents in one place on this Mac, see what's still missing, and hand your preparer a tidy folder. Nothing is uploaded anywhere.</p>
+  <div class="choices">
+    <div class="choice main"><h3>Get started</h3><p class="muted">Add your tax documents and TaxBinder sorts them out.</p><div><button type="button" id="get-started">Get started</button></div></div>
+    <div class="choice"><h3>Try with sample data</h3><p class="muted">Look around with an invented family's documents first.</p><div><button type="button" class="secondary demo-start">Open the demo</button></div><small class="muted">Kept apart from your own binder.</small></div>
+  </div>
+  {% if small %}<p class="tip">This computer has {{ memory }} GB of memory. Reading documents with TaxBinder's built-in AI model needs 16 GB, so here TaxBinder reads them with its rules alone: it finds less, and you'll check more by hand. Everything else works the same.</p>{% endif %}
+  <p class="links">Used TaxBinder before? <a href="/start/restore">Restore from a backup</a> · <a href="/start/unlock">Unlock with your recovery key</a> · <a href="/help#new-mac">Moving from another Mac</a></p>
+  <p class="tip">TaxBinder doesn't give tax advice and doesn't prepare returns. <a href="/help#privacy">What's stored where</a></p>
+{% else %}
+  <p>{{ problem }}</p>
+  <p class="muted">Nothing was changed. If this keeps happening, your binder is still safe in its folder.</p>
+  {% if not remote %}<div class="row"><button type="button" id="retry-go">Try again</button></div>{% endif %}
+{% endif %}
+  <p id="msg" role="status"></p>
+</section>
+{% endblock %}

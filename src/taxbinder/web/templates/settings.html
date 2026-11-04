@@ -1,0 +1,104 @@
+{% extends "page.html" %}
+{% block title %}Settings{% endblock %}
+{% block heading %}Settings{% endblock %}
+{% block content %}
+{# Everyday sections first; Advanced closed by default. #}
+{% include "_household.html" %}
+
+<section class="card settings-years">
+  <div class="row spread"><h2>Years</h2><span class="muted small-text">filing status and the state you lived in; a move is two states and its date</span></div>
+  <table class="grid compact">
+    <thead><tr><th>Year</th><th>Filing status</th><th>State</th><th>Moved to</th><th>On</th><th></th></tr></thead>
+    <tbody>
+    {% for c in configs %}{% set st = c.resident_states %}
+    <tr data-year="{{ c.year }}">
+      <td class="num"><b>{{ c.year }}</b></td>
+      <td><select class="select y-status" aria-label="Filing status for {{ c.year }}"><option value="">Not set</option>{% for v, t in filing_statuses.items() %}<option value="{{ v }}"{{ ' selected' if c.filing_status == v }}>{{ t }}</option>{% endfor %}</select></td>
+      <td><select class="select y-state" aria-label="State for {{ c.year }}"><option value="">Not set</option>{% for code, name in state_names.items() %}<option value="{{ code }}"{{ ' selected' if st and st[0] == code }}>{{ name }}</option>{% endfor %}</select></td>
+      <td><select class="select y-moved-to" aria-label="Moved to, {{ c.year }}"><option value="">No move</option>{% for code, name in state_names.items() %}<option value="{{ code }}"{{ ' selected' if st|length > 1 and st[1] == code }}>{{ name }}</option>{% endfor %}</select></td>
+      <td><input type="date" class="y-moved-on" aria-label="Date of the move, {{ c.year }}" value="{{ c.moved_on or '' }}"></td>
+      <td class="r"><button type="button" class="small act-year-save">Save</button></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="card">
+  <div class="row spread"><h2>Backups</h2><a href="/backup">Backup page</a></div>
+  <p>{% if backup_info %}Last backup: {{ backup_info.at[:10] }}.{% else %}No backup made yet.{% endif %}</p>
+</section>
+
+{% if not remote %}<section class="card reading" id="reading">
+  <div class="row spread"><h2>Reading with an AI model</h2><span class="muted small-text">on this computer only</span></div>
+  {% if not reading.memory_ok %}
+  <p>This computer has {{ reading.memory }} GB of memory, and reading with the AI model needs 16 GB. TaxBinder reads your documents with its rules alone, which finds less: check what it read on the Check screen.</p>
+  {% else %}
+  <p class="muted">TaxBinder reads each form twice, with its rules and with an AI model that runs on this computer, and compares the two: boxes they agree on are filled in, the others are shown to check. Nothing about your documents leaves this computer.</p>
+  {% if reading.download %}<div class="row model-progress" data-size="{{ reading.download.size }}"><progress id="model-bar" max="{{ reading.download.size }}" value="{{ reading.download.done }}" aria-label="Downloading the AI model"></progress><span id="model-done" class="muted small-text"></span><button type="button" class="secondary small act-model-cancel">Stop</button></div>{% endif %}
+  {% if reading.waiting %}<p class="muted small-text">Reading {{ reading.waiting }} document{{ 's' if reading.waiting != 1 }} with the AI model, in the background.</p>{% endif %}
+  {% if reading.last_error %}<p class="bad">The download stopped: {{ reading.last_error }}. Download again to go on from where it stopped.</p>{% endif %}
+  <ul class="models">
+  {% for m in reading.models %}
+    <li class="model-row" data-model="{{ m.id }}">
+      <div><b>{{ m.name }}</b>{% if m.id == reading.in_use %} <span class="pill ok">in use</span>{% elif m.here %} <span class="pill">downloaded</span>{% elif m.id == reading.suggested %} <span class="pill info">suggested</span>{% endif %}<br><span class="muted small-text">{{ m.maker }} · {{ m.licence }} · {{ m.size_gb }} GB</span></div>
+      <div class="acts">{% if m.here %}{% if m.id != reading.in_use %}<button type="button" class="small secondary act-model-use">Use this one</button>{% endif %}<button type="button" class="small secondary act-model-delete">Delete</button>{% elif not reading.download %}<button type="button" class="small act-model-download">Download {{ m.size_gb }} GB</button>{% endif %}</div>
+    </li>
+  {% endfor %}
+  </ul>
+  <p class="muted small-text">A download comes from Hugging Face, where the AI model's makers publish it, and is checked before it's used. AI models are kept beside your binder, not in it or its backups.</p>
+  <div class="setting">
+    <div><b>Read with the AI model</b><p class="muted small-text">Off: the rules alone, as before an AI model was downloaded.</p></div>
+    <select class="select act-model-on" aria-label="Read with the AI model"><option value="on"{{ ' selected' if reading.use }}>On</option><option value="off"{{ ' selected' if not reading.use }}>Off</option></select>
+  </div>
+  {% if reading.can_check %}<p><button type="button" class="secondary small act-model-check">Check for newer models</button></p>{% endif %}
+  {% endif %}
+</section>{% endif %}
+
+<section class="card">
+  <h2>About</h2>
+  <p>TaxBinder {{ app_version }}. Free software under the GNU Affero General Public License v3.</p>
+  <p>TaxBinder keeps your tax documents in order. It isn't tax advice; your preparer is the one to ask.</p>
+  <p class="links"><a href="/help#privacy">What's stored where, and what goes over the network</a> · <a href="/help#where">Where your data is</a> · <a href="/help#about">Licences</a></p>
+  <p class="muted small-text">Vault: <code>{{ vault }}</code></p>
+</section>
+
+<details class="card advanced">
+  <summary><h2>Advanced</h2></summary>
+  <div class="setting">
+    <div><b>Other filers</b><p class="muted small-text">Trusts and businesses that file their own return, each with its own vault. Off hides the “Filing for” switcher and moving documents between vaults; their vaults stay as they are.</p></div>
+    <select class="select act-setting" data-key="other_filers" aria-label="Other filers"><option value="off"{{ ' selected' if not other_filers_on }}>Off</option><option value="on"{{ ' selected' if other_filers_on }}>On</option></select>
+  </div>
+  <div class="setting">
+    <div><b>Tick documents one by one against the paper</b><p class="muted small-text">Shows Mark checked beside each document that's here, when you click its square on Your binder. Ticks already made stay either way.</p></div>
+    <select class="select act-setting" data-key="tick_documents" aria-label="Tick documents"><option value="off"{{ ' selected' if not ticking }}>Off</option><option value="on"{{ ' selected' if ticking }}>On</option></select>
+  </div>
+  <div class="setting">
+    <div><b>How institution websites open</b><p class="muted small-text">In an app window, what you save there lands in the inbox and is filed. In your browser, you save the files and add them yourself.</p></div>
+    <select class="select act-setting" data-key="websites_open_in" aria-label="Websites open in"><option value="app_window"{{ ' selected' if chosen.websites_open_in == 'app_window' }}>App window</option><option value="browser"{{ ' selected' if chosen.websites_open_in == 'browser' }}>Your browser</option></select>
+  </div>
+  <div class="setting">
+    <div><b>Inbox folder</b><p class="muted small-text">Files put here are read and filed. <code>{{ inbox }}</code></p></div>
+    <button type="button" class="secondary act-reveal-inbox">Show in Finder</button>
+  </div>
+  <div class="setting">
+    <div><b>Privacy</b><p class="muted small-text">Extra names and numbers to hide in AI-chat text.</p></div>
+    <a href="/privacy">Privacy page</a>
+  </div>
+  <div class="setting">
+    <div><b>Home sharing</b><p class="muted small-text">Use TaxBinder from another device at home.</p></div>
+    <a href="/sharing">Sharing page</a>
+  </div>
+  <div class="setting">
+    <div><b>Updates</b><p class="muted small-text">This is version {{ app_version }}. Checking for updates comes in a later version.</p></div>
+  </div>
+  <div class="setting wide">
+    <div><b>Usual box per form</b><p class="muted small-text">The box Across the years shows for each form. Changing one moves the rows still on the old usual box; rows you set to another box stay.</p></div>
+    <table class="grid compact usual-boxes"><tbody>
+    {% for t, boxes in box_labels.items() %}
+      <tr><td>{{ type_labels.get(t, t) }}</td><td><select class="select act-setting" data-key="usual_box.{{ t }}" aria-label="Usual box for {{ type_labels.get(t, t) }}">{% for b, label in boxes.items() %}<option value="{{ b }}"{{ ' selected' if usual[t] == b }}>{{ b }} · {{ label }}</option>{% endfor %}</select></td></tr>
+    {% endfor %}
+    </tbody></table>
+  </div>
+</details>
+{% endblock %}

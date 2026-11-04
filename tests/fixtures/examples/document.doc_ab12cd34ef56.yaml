@@ -1,0 +1,34 @@
+# §5.4 (full hash filled in)
+id: doc_ab12cd34ef56
+sha256: ab12cd34ef560000000000000000000000000000000000000000000000000000
+blob: ab/12/ab12cd34ef560000000000000000000000000000000000000000000000000000.pdf.age
+original_filename: "Kettle410_2025_K1_Final.pdf"
+mime: application/pdf
+pages: 14
+bytes: 482113
+acquired:
+  at: 2026-03-14T09:12:00-07:00
+  via: portal_window
+classification:
+  doc_type: k1_1065
+  tax_year: 2025
+  issuer: fernhollow-properties
+  source: fernhollow-properties.kettle-410
+  confidence: 0.97
+  method: rules+llm
+  confirmed_by: avery
+version:
+  supersedes: null
+  is_corrected: false
+  is_final: true
+redacted_variants:
+  - blob: redacted/ab/12/ab12cd34ef56.redacted.pdf.age
+    profile: llm_default
+    at: 2026-03-14T09:15:00-07:00
+extraction: extractions/doc_ab12cd34ef56.json
+delivery:
+  - to: preparer
+    channel: smartvault
+    at: 2026-03-20T10:02:00-07:00
+    package: 2025-package@3
+tags: []

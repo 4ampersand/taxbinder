@@ -1,0 +1,22 @@
+# §5.2 (encrypted value is a placeholder)
+id: fernhollow-properties.kettle-410
+institution: fernhollow-properties
+name: Kettle 410
+owner: avery
+identifiers:
+  - number: ENC[age:PLACEHOLDER]
+    hint: "…"
+    kind: primary
+    issuer: fernhollow-properties
+    effective_from: 2021-06-01
+    effective_to: null
+opened: 2021-06-01
+closed: null
+produces:
+  - doc_type: k1_1065
+    federal: true
+  - doc_type: k1_state
+    states: [CO]
+    optional: true
+expected_each_year: true
+tags: [real_estate, multifamily, passive]

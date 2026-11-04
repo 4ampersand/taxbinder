@@ -1,0 +1,62 @@
+{
+  "$defs": {
+    "PrivateValue": {
+      "additionalProperties": false,
+      "description": "Something to hide that the vault doesn't otherwise hold (a name, an address\u2026).",
+      "properties": {
+        "kind": {
+          "enum": [
+            "name",
+            "address",
+            "number",
+            "email",
+            "phone",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "note": {
+          "default": "",
+          "description": "Who or what it is, e.g. 'daughter'",
+          "maxLength": 80,
+          "title": "Note",
+          "type": "string"
+        },
+        "secret": {
+          "description": "Encrypted in the vault",
+          "maxLength": 300,
+          "minLength": 2,
+          "title": "Secret",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "secret"
+      ],
+      "title": "PrivateValue",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "`registry/privacy.yaml`: names, addresses and numbers to hide in anything sent out.",
+  "properties": {
+    "id": {
+      "const": "privacy",
+      "default": "privacy",
+      "title": "Id",
+      "type": "string"
+    },
+    "values": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/PrivateValue"
+      },
+      "title": "Values",
+      "type": "array"
+    }
+  },
+  "title": "PrivacyList",
+  "type": "object"
+}

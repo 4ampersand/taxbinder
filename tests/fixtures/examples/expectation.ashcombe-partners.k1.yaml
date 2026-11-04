@@ -1,0 +1,24 @@
+# §5.3
+id: 2025/copperfield-collective.ashcombe-partners.k1
+year: 2025
+source: copperfield-collective.ashcombe-partners
+doc_type: k1_1065
+applicability: applicable
+applicability_note: null
+acquisition: expected
+review: unreviewed
+delivery: not_sent
+expected_available_at: 2026-09-30
+follow_up_at: 2026-10-01
+last_check:
+  at: 2026-09-28T06:00:00-07:00
+  via: portal_window
+  result: not_found
+  detail: null
+events:
+  - at: 2026-09-15
+    type: note
+    text: "Sponsor says K-1 delayed to early October"
+evidence: []
+due_by: 2026-10-15
+priority: high

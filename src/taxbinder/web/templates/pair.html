@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pair with TaxBinder</title>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="stylesheet" href="/static/pages.css">
+</head>
+<body class="pages">
+<main class="center"><div class="card narrow">
+  <h1>Pair this device</h1>
+  <p class="muted">On the Mac running TaxBinder, open <b>Sharing → Show a pairing code</b>, then enter it here.</p>
+  <div class="row pair-form">
+    <label>Code<input id="pair-code" inputmode="numeric" autocomplete="one-time-code" placeholder="123 456"></label>
+    <label>This device's name<input id="pair-name" placeholder="e.g. Kitchen iPad"></label>
+    <button id="pair-go">Pair</button>
+  </div>
+  <div id="msg" class="muted"></div>
+</div></main>
+<script src="/static/pages.js"></script>
+</body>
+</html>

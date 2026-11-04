@@ -1,0 +1,47 @@
+{% extends "page.html" %}
+{% block title %}Sharing{% endblock %}
+{% block heading %}Share on this network{% endblock %}
+{% block content %}
+<p class="muted">Lets other devices on your home network (e.g. the kitchen iPad) use TaxBinder in a browser while this app is open. Only devices you pair can get in; you can revoke them at any time.</p>
+
+<section class="card">
+  {% if sharing %}
+  <div class="row spread">
+    <div><b class="ok">Sharing is on</b> at <code>{{ sharing.address }}</code>{% if sharing.ip %} <span class="muted">(or <code>https://{{ sharing.ip }}:{{ sharing.port }}</code>)</span>{% endif %}</div>
+    <button id="share-off" class="secondary">Turn off</button>
+  </div>
+  <p class="muted small-text">Certificate fingerprint (SHA-256), to compare with what the other browser shows the first time:<br><code class="wrap-code">{{ sharing.fingerprint }}</code></p>
+  {% else %}
+  <div class="row spread">
+    <div><b>Sharing is off.</b> <span class="muted">Nothing outside this Mac can reach TaxBinder.</span></div>
+    <button id="share-on">Turn on</button>
+  </div>
+  <p class="muted small-text">The first time, macOS may ask whether to allow incoming connections for <code>taxbinder-backend</code>: choose Allow. While sharing is off, the address doesn't answer at all (with the firewall's stealth mode the browser just waits).</p>
+  {% endif %}
+</section>
+
+{% if sharing %}
+<section class="card">
+  <h2>Add a device</h2>
+  {% if pairing %}
+  <p>On the other device, open <code>{{ sharing.address }}</code>, accept the certificate warning (check the fingerprint above), then enter this code:</p>
+  <p class="pair-code">{{ pairing.code[:3] }} {{ pairing.code[3:] }}</p>
+  <p class="muted small-text">Valid until {{ pairing.expires.astimezone().strftime('%H:%M') }}, one device, {{ pairing.tries_left }} tries.</p>
+  {% else %}
+  <button id="pair">Show a pairing code</button>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="card">
+  <h2>Paired devices <span class="muted">{{ devices|length }}</span></h2>
+  {% if devices %}
+  <ul class="devices">
+    {% for d in devices %}
+    <li><span><b>{{ d.name }}</b> <span class="muted">paired {{ d.created[:10] }} · last seen {{ d.last_seen[:16]|replace('T', ' ') if d.last_seen else 'never' }}</span></span>
+      <button class="link act-revoke" data-id="{{ d.id }}">Revoke</button></li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">None yet.</p>{% endif %}
+</section>
+{% endblock %}

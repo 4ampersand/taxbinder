@@ -1,0 +1,43 @@
+{# Start an earlier year, start the next one: on your binder's home #}
+{% if earlier %}
+<div class="scrim" id="earlier-dlg" hidden>
+  <div class="dialog wide-dialog" role="dialog" aria-modal="true" aria-labelledby="earlier-title" data-from="{{ first_year }}">
+    <header><h2 id="earlier-title">Start an earlier year</h2><button class="link" type="button" data-close="earlier-dlg" aria-label="Close">✕</button></header>
+    <div class="dialog-body">
+    <p><label for="ey-year">Year</label> <select class="select" id="ey-year">{% for y in earlier %}<option value="{{ y }}">{{ y }}</option>{% endfor %}</select></p>
+    <p>Its checklist starts with the documents you have for {{ first_year }}, each still to come. Untick the ones you didn't have then.</p>
+    <table class="plain carry"><tbody>
+    {% for r in carry_back %}
+      <tr><td><input type="checkbox" class="ey-keep" id="ey-{{ loop.index }}" value="{{ r.id }}" checked></td>
+        <td><label for="ey-{{ loop.index }}"><b>{{ r.institution }}</b> · {{ r.source }}</label></td><td>{{ r.form }}</td></tr>
+    {% endfor %}
+    </tbody></table>
+    <p class="muted small-text">Then add that year's documents: each goes into the tax year printed on it.{% if rules_from and earlier[-1] < rules_from %} TaxBinder's tax rules start with {{ rules_from }}: for an earlier year it keeps the documents and amounts, but doesn't check them.{% endif %}</p>
+    </div>
+    <footer><button class="secondary" type="button" data-close="earlier-dlg">Cancel</button><button id="ey-start" type="button">Start</button></footer>
+  </div>
+</div>
+{% endif %}
+{% if next_year %}
+<div class="scrim" id="newyear-dlg" hidden>
+  <div class="dialog wide-dialog" role="dialog" aria-modal="true" aria-labelledby="newyear-title" data-year="{{ next_year }}" data-from="{{ next_year - 1 }}">
+    <header><h2 id="newyear-title">Start {{ next_year }}</h2><button class="link" type="button" data-close="newyear-dlg" aria-label="Close">✕</button></header>
+    <div class="dialog-body">
+    {% if carry %}
+    <p>{{ next_year }}'s checklist starts with the documents you got for {{ next_year - 1 }}, each still to come. Untick the ones that won't come again, such as a closed account or a final K-1.</p>
+    <table class="plain carry"><tbody>
+    {% for r in carry %}
+      <tr><td><input type="checkbox" class="ny-keep" id="ny-{{ loop.index }}" value="{{ r.id }}"{{ ' checked' if r.keep }}></td>
+        <td><label for="ny-{{ loop.index }}"><b>{{ r.institution }}</b> · {{ r.source }}</label></td><td>{{ r.form }}</td>
+        <td class="muted small-text">{{ r.why }}</td></tr>
+    {% endfor %}
+    </tbody></table>
+    <p class="muted small-text">Amounts, documents and ticks stay with {{ next_year - 1 }}.</p>
+    {% else %}
+    <p>{{ next_year }} already has every row from {{ next_year - 1 }}.</p>
+    {% endif %}
+    </div>
+    <footer><button class="secondary" type="button" data-close="newyear-dlg">Cancel</button>{% if carry %}<button id="ny-start" type="button">Start {{ next_year }}</button>{% endif %}</footer>
+  </div>
+</div>
+{% endif %}

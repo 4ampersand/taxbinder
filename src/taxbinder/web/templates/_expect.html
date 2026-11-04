@@ -1,0 +1,29 @@
+{# Expect another document: the checklist's Add a row, opened from a year's card. #}
+{% set f = form %}
+<div class="scrim" id="add-row" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="add-row-title">
+    <header><h2 id="add-row-title">A document still to come in <span id="ar-year"></span></h2><button class="link" type="button" data-close="add-row" aria-label="Close">✕</button></header>
+    <div class="form">
+      <div class="field"><label for="ar-inst">Who sends it</label><input id="ar-inst" list="ar-insts" autocomplete="off" placeholder="e.g. Fidelis"></div>
+      <div class="field"><label for="ar-src">Account, fund or employer</label><input id="ar-src" list="ar-srcs" autocomplete="off"></div>
+      <div class="field"><label for="ar-type">Document</label><select id="ar-type">
+        <optgroup label="Built in">{% for t in f.builtin_types %}<option value="{{ t }}">{{ f.labels.get(t, t) }}</option>{% endfor %}</optgroup>
+        {% if f.custom_types %}<optgroup label="Yours">{% for d in f.custom_types %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}</optgroup>{% endif %}
+        <option value="__new__">＋ A new kind of document…</option>
+      </select></div>
+      <div class="field"><label for="ar-owner">Whose</label><select id="ar-owner">{% for t in f.taxpayers %}<option value="{{ t.id }}"{{ " selected" if t.id == f.default_owner }}>{{ t.name }}</option>{% endfor %}<option value="household"{{ " selected" if f.default_owner == "household" }}>{{ f.filer_name }} (not one person)</option></select></div>
+      <div class="newtype" id="ar-newtype" hidden>
+        <h3>A new kind of document</h3>
+        <div class="field"><label for="nt-name">Name</label><input id="nt-name" placeholder="e.g. Form 592-B"></div>
+        <div class="field"><label for="nt-folder">Goes in the preparer’s files under</label><select id="nt-folder">{% for x in f.folders %}<option value="{{ x }}"{{ ' selected' if x == '09-Other' }}>{{ x|replace('-', ' ', 1) }}</option>{% endfor %}</select></div>
+        <div class="field wide"><label for="nt-words">Words that identify it on the document <span class="muted">(optional, comma-separated)</span></label><input id="nt-words" placeholder="e.g. Form 592-B, Resident and Nonresident Withholding"><span class="tip">Used to recognise this kind when you add one.</span></div>
+      </div>
+      <div class="field"><label for="ar-amount">Amount <span class="muted">(optional)</span></label><input id="ar-amount" class="num" inputmode="decimal" placeholder="$0.00"></div>
+      <div class="field"><label for="ar-comment">Comment <span class="muted">(optional)</span></label><input id="ar-comment" placeholder="Anything worth remembering"></div>
+      <p class="small" id="ar-say" role="status"></p>
+    </div>
+    <footer><button class="secondary" type="button" data-close="add-row">Cancel</button><button id="ar-add" type="button">Expect it</button></footer>
+  </div>
+  <datalist id="ar-insts">{% for n in f.institution_names %}<option value="{{ n }}">{% endfor %}</datalist>
+  <datalist id="ar-srcs">{% for n in f.source_names %}<option value="{{ n }}">{% endfor %}</datalist>
+</div>

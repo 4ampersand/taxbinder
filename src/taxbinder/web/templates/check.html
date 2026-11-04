@@ -1,0 +1,101 @@
+{% extends "page.html" %}
+{% block title %}Check{% endblock %}
+{% block heading %}Here's what we found{% endblock %}
+{% block content %}
+{# Check: the household box, Questions for you (never guessed), Looks right by
+   institution; Looks good, file them is one change in this vault (check.py). #}
+{% set n_ask = found.asked | length + (1 if house_open else 0) %}
+<div class="check-page">
+{% if found.total or not later %}<p class="muted">{{ found.total }}{{ ' new' if later }} document{{ 's' if found.total != 1 }} {{ 'since your last Check' if later else 'waiting' }}{% if n_ask %} · <b>{{ n_ask }} question{{ 's' if n_ask != 1 }} for you</b>{% endif %}</p>{% endif %}
+{% if household and (house_open or not later) %}{% include "_household.html" %}{% endif %}
+
+{% macro what(f) %}<b>{{ f.issuer or ('Your tax return' if f.doc.tax_return else 'Sender not read') }} · {{ f.label }}{% if f.year %}, {{ f.year }}{% endif %}</b>
+<small>{% if f.doc.scanned %}<span class="pill info">scanned</span> {% endif %}{{ f.doc.original_filename }}{% if f.account %} · account {{ f.account }}{% endif %}{% set w = f.doc.recipient.taxpayers if f.doc.recipient else [] %}{% if w %} · for {% for t in w %}{{ people[t].name if t in people else t }}{{ ' and ' if not loop.last }}{% endfor %}{% endif %}{% if f.note %} · {{ f.note }}{% endif %}</small>{% endmacro %}
+{% macro data(f) %}data-id="{{ f.doc.id }}" data-type="{{ f.doc.classification.doc_type or '' if f.doc.classification else '' }}" data-year="{{ f.year or '' }}" data-issuer="{{ f.issuer }}" data-account="{{ f.account }}" data-whose="{{ (f.doc.recipient.taxpayers if f.doc.recipient else []) | join(',') }}" data-name="{{ f.doc.original_filename }}"{% endmacro %}
+{% macro name(f) %}{{ f.issuer or ('Your tax return' if f.doc.tax_return else 'Sender not read') }} · {{ f.label }}{% if f.year %}, {{ f.year }}{% endif %}{% endmacro %}
+{% macro acts(f, later=False) %}<span class="acts"><button type="button" class="link" data-view="{{ f.doc.id }}" aria-label="View: {{ name(f) }}">View</button> <button type="button" class="link chk-edit" aria-label="Change what was read: {{ name(f) }}">Change…</button>
+  {%- if later %} <button type="button" class="link chk-mark" data-what="back" aria-label="Bring back: {{ name(f) }}">Bring back</button>{% else %} <button type="button" class="link chk-mark" data-what="skip" aria-label="Skip for now: {{ name(f) }}">Skip</button>{% endif %}
+  {%- if not later or f.note == 'skipped for now' %} <button type="button" class="link chk-mark" data-what="not_tax" aria-label="Not a tax document: {{ name(f) }}">Not a tax document</button>{% endif %} <button type="button" class="link danger chk-del" aria-label="Delete: {{ name(f) }}">Delete</button></span>{% endmacro %}
+
+{% if found.asked %}<section class="group card" aria-labelledby="ask-h">
+  <header class="row spread"><h2 id="ask-h">Questions for you</h2><span class="pill warn">{{ found.asked | length }}</span></header>
+  {% for f in found.asked %}<div class="doc ask" {{ data(f) }}>
+    <div class="what">{{ what(f) }}
+      <div class="ask-box row" role="group" aria-label="{{ {'whose': 'Whose is this?', 'copy': 'Two copies', 'return': 'Which copy of the return?', 'scan': 'Read from a scan', 'type': 'What is it?', 'year': 'Which tax year?', 'issuer': 'Who sent it?', 'read': 'Read two ways', 'boxes': 'Amounts to confirm'}.get(f.question, 'Question') }} {{ name(f) }}">
+      {% if f.question == 'whose' %}<b>Whose is this?</b>
+        {% set solo = people.values() | selectattr('kind', 'equalto', 'individual') | list %}
+        {% for p in people.values() %}<button type="button" class="small chk-whose" data-whose="{{ p.id }}">{{ p.name.split(' ')[0] if p.kind == 'individual' else p.name }}</button>{% endfor %}
+        {% if solo | length > 1 %}<button type="button" class="small secondary chk-whose" data-whose="{{ solo | map(attribute='id') | join(',') }}">Both</button>{% endif %}
+      {% elif f.question == 'copy' %}<button type="button" class="small chk-drop">Keep the other one</button><button type="button" class="small secondary chk-mark" data-what="distinct">They're different</button>
+      {% elif f.question == 'return' %}<button type="button" class="small chk-return" data-status="filed">The filed copy</button><button type="button" class="small secondary chk-return" data-status="draft">A draft</button>
+      {% elif f.question == 'scan' %}<button type="button" class="small chk-mark" data-what="ok">Looks right</button><button type="button" class="small secondary chk-edit">Change…</button>
+      {% elif f.question == 'type' %}<label class="sr-only" for="t-{{ f.doc.id }}">What is it?</label><select id="t-{{ f.doc.id }}" class="chk-type-pick"><option value="">What is it?</option>{% for v, t in labels.items() %}<option value="{{ v }}">{{ t }}</option>{% endfor %}</select><button type="button" class="small chk-type">Save</button>
+      {% elif f.question == 'year' %}<label class="sr-only" for="y-{{ f.doc.id }}">Tax year</label><input id="y-{{ f.doc.id }}" class="chk-year-pick year-input" inputmode="numeric" placeholder="{{ year }}"><button type="button" class="small chk-year">Save</button>
+      {% elif f.question == 'issuer' %}<label class="sr-only" for="i-{{ f.doc.id }}">Who sent it</label><input id="i-{{ f.doc.id }}" class="chk-issuer-pick" list="inst-names" placeholder="e.g. Larkmoor Savings Bank" value="{{ f.suggest }}"><button type="button" class="small chk-issuer">Save</button>{% if f.suggest %}<span class="muted small-text">as the AI model read it: check it</span>{% endif %}
+      {% elif f.question == 'read' %}<button type="button" class="small chk-use-model" data-issuer="{{ f.suggest }}" data-year="{{ f.suggest_year or '' }}">Use the AI model's</button><button type="button" class="small secondary chk-mark" data-what="read_ok">Keep what's there</button>
+      {% elif f.question == 'boxes' %}<div class="chk-boxes">{% for b in f.boxes %}<div class="row chk-box" data-box="{{ b.box }}"><span><b>Box {{ b.box }}{% if b.label %} · {{ b.label }}{% endif %}</b> <small class="muted">{{ b.why }}</small></span>
+        {% if b.rules %}<button type="button" class="small chk-box-use" data-value="{{ b.rules_raw }}">{{ 'Keep' if b.model else 'It’s' }} {{ b.rules }}{{ ' (the rules’)' if b.model }}</button>{% endif %}
+        {% if b.model %}<button type="button" class="small secondary chk-box-use" data-value="{{ b.model_raw }}">Use {{ b.model }} (the AI model’s)</button>{% endif %}
+        <label class="sr-only" for="bx-{{ f.doc.id }}-{{ b.box }}">Box {{ b.box }}: type the amount</label><input id="bx-{{ f.doc.id }}-{{ b.box }}" class="chk-box-pick" inputmode="decimal" placeholder="Type it" size="10"><button type="button" class="small secondary chk-box-save">Save</button></div>{% endfor %}</div>{% endif %}
+      </div>
+    </div>{{ acts(f) }}
+  </div>{% endfor %}
+</section>{% endif %}
+
+{% for f, for_year, listed, totals in found.returns %}{% set missing = listed | rejectattr('here') | list %}
+<section class="card group">
+  <header class="row spread"><h2>From your {{ f.year }} return</h2><span class="muted small-text">what it lists, against {{ for_year }}</span></header>
+  {% if listed %}<ul class="listed">{% for s in listed %}
+    <li>{{ s.item.name }} <span class="muted">{{ labels.get(s.item.doc_type, s.item.doc_type) }}</span>
+      {% if s.here %}<span class="pill ok">here</span>{% elif s.row %}<span class="pill">expected, no document yet</span>{% else %}<span class="pill warn">listed on the return, no document yet</span>{% endif %}</li>
+  {% endfor %}</ul>
+  {% if missing %}<p class="tip">Filing adds {{ missing | length }} row{{ 's' if missing | length != 1 }} to {{ for_year }}’s checklist for these, so you can see what’s still to come.</p>{% endif %}{% endif %}
+  {% for t in totals %}<p class="tip">{{ t }} <a href="/?year={{ for_year }}#expect">Add it to this year’s list</a></p>{% endfor %}
+</section>{% endfor %}
+
+{% if found.groups %}<section class="group card" aria-labelledby="ok-h">
+  <header class="row spread"><h2 id="ok-h">Looks right</h2><span class="muted small-text">{{ found.groups | sum(attribute='items', start=[]) | length }} documents from {{ found.groups | length }} place{{ 's' if found.groups | length != 1 }}{% if found.years %} · {{ found.years | join(', ') }}{% endif %}</span></header>
+  {% for g in found.groups %}<details class="fold">
+    <summary><b>{{ g.issuer }}</b> <small class="muted">{{ g.summary }}{% if g.items | length > 1 %} · {{ g.items | length }}{% endif %}</small></summary>
+    {% for f in g.items %}<div class="doc" {{ data(f) }}>
+      <div class="what">{{ what(f) }}<small class="muted">TaxBinder is {{ f.sure }}{% if f.row %} · expected already{% endif %}</small></div>{{ acts(f) }}
+    </div>{% endfor %}
+    {% set inst = (g.items[0].doc.classification.issuer if g.items[0].doc.classification else None) %}
+    {% if inst in mergeable and institutions | length > 1 %}<div class="row merge-row" data-from="{{ inst }}"><label for="m-{{ inst }}" class="small-text muted">The same as</label>
+      <select id="m-{{ inst }}" class="chk-merge-pick"><option value="">another place…</option>{% for i in institutions if i.id != inst %}<option value="{{ i.id }}">{{ i.name }}</option>{% endfor %}</select>
+      <button type="button" class="small secondary chk-merge">Merge</button></div>{% endif %}
+  </details>{% endfor %}
+</section>{% endif %}
+
+{% if found.later %}<section class="card group">
+  <header><h2>Not filed</h2></header>
+  {% for f in found.later %}<div class="doc" {{ data(f) }} data-later="1"><div class="what">{{ what(f) }}</div>{{ acts(f, later=True) }}</div>{% endfor %}
+  <p class="tip">Skipped ones wait here for next time; a document that isn't for taxes stays in your binder, on no checklist. Bring back puts either with the others again.</p>
+</section>{% endif %}
+
+{% if not found.total %}<section class="card"><p>Nothing is waiting for Check. Documents you add, and those that arrive in the inbox folder or from a portal window, come here first, so nothing is filed unseen.</p><p><a class="btn" href="/add">Add documents</a></p></section>{% endif %}
+
+{% if found.total %}<div class="row spread check-foot">
+  <a href="/">Finish later</a>
+  <span class="row">{% if found.asked %}<span class="muted small-text" id="chk-why">Answer the {{ found.asked | length }} question{{ 's' if found.asked | length != 1 }} above first.</span>{% endif %}
+  <button type="button" id="chk-confirm"{% if found.asked %} disabled aria-describedby="chk-why"{% endif %}>Looks good, file them</button></span>
+</div>{% endif %}
+</div>
+
+<datalist id="inst-names">{% for i in institutions %}<option value="{{ i.name }}">{% endfor %}</datalist>
+<div class="scrim" id="doc-dlg" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="doc-dlg-title">
+    <header><h2 id="doc-dlg-title">Change what was read</h2><button class="link" type="button" data-close="doc-dlg" aria-label="Close">✕</button></header>
+    <div class="form">
+      <p class="field wide muted small-text" id="dd-name"></p>
+      <div class="field"><label for="dd-type">What it is</label><select id="dd-type">{% for v, t in labels.items() %}<option value="{{ v }}">{{ t }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="dd-year">Tax year</label><input id="dd-year" inputmode="numeric"></div>
+      <div class="field wide"><label for="dd-issuer">Who sent it</label><input id="dd-issuer" list="inst-names"></div>
+      <div class="field wide"><label for="dd-account">Account number</label><input id="dd-account" autocomplete="off" spellcheck="false"><small class="muted">Leave empty to keep it; only the last 4 digits are ever shown.</small></div>
+      <fieldset class="field wide"><legend>Whose it is</legend>{% for p in people.values() %}<label class="check-inline"><input type="checkbox" class="dd-whose" value="{{ p.id }}"> {{ p.name }}</label>{% endfor %}{% if not people %}<span class="muted small-text">Confirm the household first.</span>{% endif %}</fieldset>
+      {% if others %}<div class="field wide"><label for="dd-filer">Filer</label><select id="dd-filer"><option value="">{{ entity.name }} (this binder)</option>{% for slug, info in others %}<option value="{{ slug }}">{{ info.name }}</option>{% endfor %}</select></div>{% endif %}
+    </div>
+    <footer><button class="secondary" type="button" data-close="doc-dlg">Cancel</button><button id="dd-save" type="button">Save</button></footer>
+  </div>
+</div>
+{% endblock %}

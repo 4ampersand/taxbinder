@@ -1,0 +1,50 @@
+{# Questions for you, on Add documents: answered where the documents were added, without
+   going to Check. The same questions as Check (`check.report`), each answer
+   through the same API (add.js), undoable; then "Looks good, file them". #}
+{% set left = found.asked | length %}
+<div class="asks-in" data-left="{{ left }}" data-ready="{{ ready }}" data-docs="{{ found.asked | map(attribute='doc.id') | join(' ') }}">
+{% if left %}
+  <div class="row spread wrapping"><h2 id="ask-head">{{ left }} question{{ 's' if left != 1 }} for you</h2><span class="muted small">Answer here: each answer can be undone in Changes. Then file them.</span></div>
+  {% for f in found.asked %}{% set c = f.doc.classification %}{% set who = f.issuer or ('Your tax return' if f.doc.tax_return else 'Sender not read') %}
+  <div class="ask" id="ask-{{ f.doc.id }}" data-id="{{ f.doc.id }}" data-year="{{ f.year or '' }}">
+    <div class="what"><b>{{ who }} · {{ f.label }}{% if f.year %}, {{ f.year }}{% endif %}</b>
+      <small class="muted">{{ f.doc.original_filename }}{% if f.account %} · account {{ f.account }}{% endif %}{% if f.note %} · {{ f.note }}{% endif %}</small></div>
+    <div class="ask-box" role="group" aria-label="{{ questions.get(f.question, 'Question') }} {{ who }}, {{ f.label }}">
+      <b class="q">{{ questions.get(f.question, 'Question') }}</b>
+      {% if f.question == 'whose' %}
+        {% set solo = people.values() | selectattr('kind', 'equalto', 'individual') | list %}
+        {% for p in people.values() %}<button type="button" class="btn small ghost" data-a="whose" data-v="{{ p.id }}">{{ p.name.split(' ')[0] if p.kind == 'individual' else p.name }}</button>{% endfor %}
+        {% if solo | length > 1 %}<button type="button" class="btn small ghost" data-a="whose" data-v="{{ solo | map(attribute='id') | join(',') }}">Both</button>{% endif %}
+      {% elif f.question == 'copy' %}<button type="button" class="btn small" data-a="drop">Keep the other one</button><button type="button" class="btn small ghost" data-a="mark" data-v="distinct">They’re different</button>
+      {% elif f.question == 'return' %}<button type="button" class="btn small" data-a="return" data-v="filed">The filed copy</button><button type="button" class="btn small ghost" data-a="return" data-v="draft">A draft</button>
+      {% elif f.question == 'scan' %}<button type="button" class="btn small" data-a="mark" data-v="ok">Looks right</button><button type="button" class="btn small ghost" data-view="{{ f.doc.id }}">View it</button>
+      {% elif f.question == 'type' %}<select class="pick" aria-label="What it is"><option value="">Choose…</option>{% for v, t in labels.items() %}<option value="{{ v }}">{{ t }}</option>{% endfor %}</select><button type="button" class="btn small" data-a="type">Save</button>
+      {% elif f.question == 'year' %}<input class="pick year" inputmode="numeric" placeholder="{{ year }}" aria-label="Tax year"><button type="button" class="btn small" data-a="year">Save</button>
+      {% elif f.question == 'issuer' %}<input class="pick" list="ask-inst" placeholder="e.g. Larkmoor Savings Bank" value="{{ f.suggest }}" aria-label="Who sent it"><button type="button" class="btn small" data-a="issuer">Save</button>{% if f.suggest %}<small class="muted">as the AI model read it: check it</small>{% endif %}
+      {% elif f.question == 'read' %}<button type="button" class="btn small" data-a="use-model" data-issuer="{{ f.suggest }}" data-year="{{ f.suggest_year or '' }}">Use the AI model’s</button><button type="button" class="btn small ghost" data-a="mark" data-v="read_ok">Keep what’s there</button>
+      {% elif f.question == 'boxes' %}
+        {% for b in f.boxes %}<div class="abox" data-box="{{ b.box }}">
+          <span><b>Box {{ b.box }}{% if b.label %} · {{ b.label }}{% endif %}</b> <small class="muted">{{ b.why }}</small></span>
+          <span class="row wrap">
+          {% if b.rules %}<button type="button" class="btn small" data-a="box" data-v="{{ b.rules_raw }}">{{ 'Keep' if b.model else 'It’s' }} {{ b.rules }}{{ ' (the rules’)' if b.model }}</button>{% endif %}
+          {% if b.model %}<button type="button" class="btn small ghost" data-a="box" data-v="{{ b.model_raw }}">Use {{ b.model }} (the AI model’s)</button>{% endif %}
+          <input class="pick num" inputmode="decimal" placeholder="Type it" aria-label="Box {{ b.box }}: type the amount"><button type="button" class="btn small ghost" data-a="box-typed">Save</button>
+          </span>
+        </div>{% endfor %}
+      {% endif %}
+    </div>
+    <div class="row wrap acts">
+      <button type="button" class="link" data-a="bench">Show it at the reading bench</button>
+      <button type="button" class="link" data-view="{{ f.doc.id }}">View</button>
+      <button type="button" class="link" data-a="mark" data-v="skip">Skip for now</button>
+      <button type="button" class="link" data-a="mark" data-v="not_tax">Not a tax document</button>
+    </div>
+  </div>
+  {% endfor %}
+  <datalist id="ask-inst">{% for i in institutions %}<option value="{{ i.name }}">{% endfor %}</datalist>
+{% elif ready %}
+  <div class="row spread wrapping"><h2 id="ask-head">Nothing left to answer</h2>
+    <button type="button" class="btn" data-a="file">Looks good, file {{ 'it' if ready == 1 else 'them' }}</button></div>
+  <p class="muted">{{ ready }} document{{ 's' if ready != 1 }} ready to go into your binder{% if found.later %}; {{ found.later | length }} skipped or not for taxes stay out{% endif %}. Filing is one change: Undo puts it back.</p>
+{% endif %}
+</div>

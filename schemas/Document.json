@@ -1,0 +1,813 @@
+{
+  "$defs": {
+    "Acquired": {
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "format": "date-time",
+          "title": "At",
+          "type": "string"
+        },
+        "filename": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Filename"
+        },
+        "source_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Without query string (may hold tokens)",
+          "title": "Source Url"
+        },
+        "via": {
+          "description": "upload | drop_folder | portal_window | \u2026",
+          "title": "Via",
+          "type": "string"
+        }
+      },
+      "required": [
+        "at",
+        "via"
+      ],
+      "title": "Acquired",
+      "type": "object"
+    },
+    "Classification": {
+      "additionalProperties": false,
+      "properties": {
+        "account_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "As printed; encrypted in the vault (\u00a74.6)",
+          "title": "Account Number"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "confirmed_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confirmed By"
+        },
+        "doc_type": {
+          "anyOf": [
+            {
+              "enum": [
+                "w2",
+                "1099_composite",
+                "1099_int",
+                "1099_div",
+                "1099_q",
+                "1099_r",
+                "1099_misc",
+                "1099_nec",
+                "ssa_1099",
+                "1098",
+                "5498",
+                "5498_sa",
+                "k1_1065",
+                "k1_state",
+                "k1_1120s",
+                "k1_1041",
+                "donation_ack",
+                "form_8283_support",
+                "payment_confirmation",
+                "property_tax_bill",
+                "vehicle_registration",
+                "account_change_notice",
+                "foreign_bank_statement",
+                "fbar_filing",
+                "tax_return",
+                "return_paper"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^x-[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Doc Type"
+        },
+        "fiscal_year_end": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "A fiscal-year K-1: its tax year ends here, and is filed by it",
+          "title": "Fiscal Year End"
+        },
+        "issuer": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Issuer"
+        },
+        "issuer_tin": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The issuer's EIN as printed; encrypted in the vault (\u00a74.6)",
+          "title": "Issuer Tin"
+        },
+        "method": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "`+`-joined: filename, rules, llm, human",
+          "title": "Method"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source"
+        },
+        "tax_year": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tax Year"
+        }
+      },
+      "title": "Classification",
+      "type": "object"
+    },
+    "DeliveryRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "format": "date-time",
+          "title": "At",
+          "type": "string"
+        },
+        "channel": {
+          "title": "Channel",
+          "type": "string"
+        },
+        "package": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Package"
+        },
+        "to": {
+          "title": "To",
+          "type": "string"
+        }
+      },
+      "required": [
+        "to",
+        "channel",
+        "at"
+      ],
+      "title": "DeliveryRecord",
+      "type": "object"
+    },
+    "Listed": {
+      "additionalProperties": false,
+      "description": "A payer or entity a return names (Schedule B, Schedule E), and the form it sends (a\ndividend payer's is a consolidated 1099 row, which also takes a 1099-DIV on its own).",
+      "properties": {
+        "doc_type": {
+          "anyOf": [
+            {
+              "enum": [
+                "w2",
+                "1099_composite",
+                "1099_int",
+                "1099_div",
+                "1099_q",
+                "1099_r",
+                "1099_misc",
+                "1099_nec",
+                "ssa_1099",
+                "1098",
+                "5498",
+                "5498_sa",
+                "k1_1065",
+                "k1_state",
+                "k1_1120s",
+                "k1_1041",
+                "donation_ack",
+                "form_8283_support",
+                "payment_confirmation",
+                "property_tax_bill",
+                "vehicle_registration",
+                "account_change_notice",
+                "foreign_bank_statement",
+                "fbar_filing",
+                "tax_return",
+                "return_paper"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^x-[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string"
+            }
+          ],
+          "title": "Doc Type"
+        },
+        "ein": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "As printed; encrypted in the vault",
+          "title": "Ein"
+        },
+        "name": {
+          "description": "As printed",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "doc_type"
+      ],
+      "title": "Listed",
+      "type": "object"
+    },
+    "Recipient": {
+      "additionalProperties": false,
+      "description": "Whose document it is: the person, both spouses, or a trust named on it.",
+      "properties": {
+        "ask": {
+          "default": false,
+          "description": "Unclear (shared surname, unknown name): asked on review",
+          "title": "Ask",
+          "type": "boolean"
+        },
+        "printed": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The recipient's name as printed",
+          "title": "Printed"
+        },
+        "taxpayers": {
+          "default": [],
+          "description": "Who it's for: one person, both, or a trust",
+          "items": {
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "title": "Taxpayers",
+          "type": "array"
+        }
+      },
+      "title": "Recipient",
+      "type": "object"
+    },
+    "RedactedVariant": {
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "format": "date-time",
+          "title": "At",
+          "type": "string"
+        },
+        "blob": {
+          "title": "Blob",
+          "type": "string"
+        },
+        "profile": {
+          "title": "Profile",
+          "type": "string"
+        }
+      },
+      "required": [
+        "blob",
+        "profile",
+        "at"
+      ],
+      "title": "RedactedVariant",
+      "type": "object"
+    },
+    "ReturnInfo": {
+      "additionalProperties": false,
+      "description": "What kind of tax return (or paper filed with one) a document is.",
+      "properties": {
+        "amended": {
+          "default": false,
+          "title": "Amended",
+          "type": "boolean"
+        },
+        "form": {
+          "description": "As printed: 1040, 1040-X, 1065, IT-201, 540, 8879, 4868, \u2026",
+          "title": "Form",
+          "type": "string"
+        },
+        "jurisdiction": {
+          "default": "federal",
+          "pattern": "^(federal|[A-Z]{2})$",
+          "title": "Jurisdiction",
+          "type": "string"
+        },
+        "read": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReturnRead"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "A 1040's contents"
+        },
+        "resident": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "State returns: resident or not, if printed",
+          "title": "Resident"
+        },
+        "status": {
+          "default": "unsure",
+          "enum": [
+            "draft",
+            "filed",
+            "unsure"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "form"
+      ],
+      "title": "ReturnInfo",
+      "type": "object"
+    },
+    "ReturnPerson": {
+      "additionalProperties": false,
+      "description": "Someone named on a 1040's first page.",
+      "properties": {
+        "last4": {
+          "anyOf": [
+            {
+              "pattern": "^\\d{4}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Of the SSN; never more",
+          "title": "Last4"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "taxpayer",
+            "spouse",
+            "dependent"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "role"
+      ],
+      "title": "ReturnPerson",
+      "type": "object"
+    },
+    "ReturnRead": {
+      "additionalProperties": false,
+      "description": "What a 1040 says about the household and its documents: suggestions only,\nconfirmed by a person before anything else uses them.",
+      "properties": {
+        "filing_status": {
+          "anyOf": [
+            {
+              "enum": [
+                "single",
+                "married_filing_jointly",
+                "married_filing_separately",
+                "head_of_household",
+                "qualifying_surviving_spouse"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Filing Status"
+        },
+        "listed": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Listed"
+          },
+          "title": "Listed",
+          "type": "array"
+        },
+        "paid": {
+          "default": [],
+          "description": "What it shows was paid (estimated tax, property tax, gifts): never amounts",
+          "items": {
+            "enum": [
+              "estimated",
+              "property_tax",
+              "vehicle",
+              "gifts"
+            ],
+            "type": "string"
+          },
+          "title": "Paid",
+          "type": "array"
+        },
+        "people": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ReturnPerson"
+          },
+          "title": "People",
+          "type": "array"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "From the address",
+          "title": "State"
+        },
+        "totals_only": {
+          "default": [],
+          "description": "Income the return only totals (W-2 wages\u2026): rows added by hand",
+          "items": {
+            "enum": [
+              "wages",
+              "interest",
+              "dividends",
+              "retirement",
+              "social_security",
+              "mortgage_interest"
+            ],
+            "type": "string"
+          },
+          "title": "Totals Only",
+          "type": "array"
+        }
+      },
+      "title": "ReturnRead",
+      "type": "object"
+    },
+    "Version": {
+      "additionalProperties": false,
+      "properties": {
+        "is_corrected": {
+          "default": false,
+          "title": "Is Corrected",
+          "type": "boolean"
+        },
+        "is_final": {
+          "default": true,
+          "title": "Is Final",
+          "type": "boolean"
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "pattern": "^doc_[0-9a-f]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Supersedes"
+        }
+      },
+      "title": "Version",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "acquired": {
+      "$ref": "#/$defs/Acquired"
+    },
+    "blob": {
+      "title": "Blob",
+      "type": "string"
+    },
+    "bytes": {
+      "title": "Bytes",
+      "type": "integer"
+    },
+    "classification": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Classification"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "confirmed_boxes": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ]
+      },
+      "default": {},
+      "description": "Key boxes whose amount the person confirmed where the readers didn't agree, box \u2192 amount; wins over both readings",
+      "title": "Confirmed Boxes",
+      "type": "object"
+    },
+    "delivery": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/DeliveryRecord"
+      },
+      "title": "Delivery",
+      "type": "array"
+    },
+    "extraction": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Extraction"
+    },
+    "id": {
+      "pattern": "^doc_[0-9a-f]{12}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "mime": {
+      "title": "Mime",
+      "type": "string"
+    },
+    "model_read": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "What the reading model read on it, compared with the rules: the cross-check's blob (encrypted)",
+      "title": "Model Read"
+    },
+    "ocr": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Its scanned pages were read on the Mac: the words' blob (encrypted)",
+      "title": "Ocr"
+    },
+    "original_filename": {
+      "title": "Original Filename",
+      "type": "string"
+    },
+    "pages": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Pages"
+    },
+    "preparer_note": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "For my preparer: what the paper is for, in the person's words",
+      "title": "Preparer Note"
+    },
+    "reacquired": {
+      "default": [],
+      "description": "Later copies of the same bytes",
+      "items": {
+        "$ref": "#/$defs/Acquired"
+      },
+      "title": "Reacquired",
+      "type": "array"
+    },
+    "recipient": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Recipient"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "redacted_variants": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/RedactedVariant"
+      },
+      "title": "Redacted Variants",
+      "type": "array"
+    },
+    "sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Sha256",
+      "type": "string"
+    },
+    "tags": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Tags",
+      "type": "array"
+    },
+    "tax_return": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ReturnInfo"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Set for a return or return paper"
+    },
+    "version": {
+      "$ref": "#/$defs/Version",
+      "default": {
+        "is_corrected": false,
+        "is_final": true,
+        "supersedes": null
+      }
+    },
+    "waiting": {
+      "default": false,
+      "description": "Added through Add documents and not yet filed on Check",
+      "title": "Waiting",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "sha256",
+    "blob",
+    "original_filename",
+    "mime",
+    "bytes",
+    "acquired"
+  ],
+  "title": "Document",
+  "type": "object"
+}

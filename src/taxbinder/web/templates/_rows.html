@@ -1,0 +1,39 @@
+{# A square's checklist rows (the checklist folded into the deck card), shown in its side
+   panel; every button goes through the app's API (app.js). #}
+{% for r in rows %}{% set e = r.e %}{% set st = r.status %}
+<div class="xrow" data-id="{{ e.id }}" data-year="{{ e.year }}">
+  <p class="row spread"><b>{{ r.source }}</b><span class="pill {{ st[2] }}">{{ st[1] }}</span></p>
+  {% if e.delivery == 'stale' %}<p class="small"><span class="pill warn">needs sending again</span> A corrected document replaced the one your preparer has.</p>{% endif %}
+  {% set m = mx.get((e.source, e.doc_type)) %}{% set cell = m.cells.get(e.year) if m else none %}
+  {% if m and m.boxes %}{% set names = dict(m.options) %}{% set in_ay = (e.source, e.doc_type) in shown %}
+  {% for b in m.boxes %}{% if loop.first or in_ay %}{% set i = loop.index0 %}{% set v = cell.shown_at(i) if cell else none %}{% set typed = cell.raw_at(i) if cell else '' %}
+  <div class="bxf">
+    <label class="rf">Box {{ b }} <input class="num" data-field="{{ 'amount' if i == 0 else 'box' }}" data-i="{{ i }}" data-source="{{ e.source }}" data-doc-type="{{ e.doc_type }}" inputmode="decimal" placeholder="Nothing yet" value="{{ typed or (v if v is not none else '') }}"></label>
+    <small class="muted">{{ names.get(b, '') }}{% if v is not none and not typed %}{{ ' · ' if names.get(b) }}as read from the document{% endif %}</small>
+  </div>
+  {% endif %}{% endfor %}
+  {% if m.options %}<label class="rf">Use box <select class="pick-box" data-source="{{ e.source }}" data-doc-type="{{ e.doc_type }}" data-boxes="{{ m.boxes|join(',') }}" data-in="{{ 'yes' if in_ay }}" aria-label="The box followed for {{ r.source }}, in every year">
+    {% if m.boxes[0] not in m.options|map('first') %}<option value="{{ m.boxes[0] }}" selected>{{ m.boxes[0] }}</option>{% endif %}
+    {% for b, label in m.options %}<option value="{{ b }}"{{ ' selected' if b == m.boxes[0] }}>{{ b }} · {{ label }}{{ ' (usual)' if b == m.usual }}</option>{% endfor %}
+  </select></label>
+  <small class="muted">Another box changes this row in every year, so the years compare.</small>{% endif %}
+  {% else %}
+  <label class="rf">Amount <input class="num" data-field="amount" inputmode="decimal" placeholder="$0.00" value="{{ e.amount if e.amount is not none else '' }}"></label>
+  {% endif %}
+  <label class="rf">Comment <input data-field="comment" placeholder="Anything worth remembering" value="{{ e.comment }}"></label>
+  <label class="rf">Portal <input type="url" data-field="portal" placeholder="https://…" value="{{ r.portal }}"></label>
+  <div class="row wrap">
+    {% if r.portal %}<button type="button" class="btn small ghost" data-act="portal" data-url="{{ r.portal }}">Open {{ r.portal_host }} ↗</button>{% endif %}
+    <button type="button" class="btn small ghost" data-act="upload">Add its file</button>
+    {% if r.files %}<button type="button" class="btn small ghost" data-act="download" data-ids="{{ r.files|join(',') }}">Download{% if r.files|length > 1 %} ({{ r.files|length }} files){% endif %}</button>{% endif %}
+    {% if ticking and e.applicability == 'applicable' and e.acquisition == 'vaulted' and e.review != 'verified' %}<button type="button" class="btn small" data-act="verify" data-verified="true">Mark checked</button>{% endif %}
+    {% if e.review == 'verified' %}<button type="button" class="btn small ghost" data-act="verify" data-verified="false">Undo checked</button>{% endif %}
+    {% if e.applicability == 'applicable' %}<button type="button" class="btn small ghost" data-act="away" aria-expanded="false">Not expected this year</button>{% else %}<button type="button" class="btn small ghost" data-act="applicable">Expected again</button>{% endif %}
+    {% if not r.files %}<button type="button" class="link rm-row" data-act="delete">Remove the row</button>{% endif %}
+  </div>
+  <div class="row wrap why" hidden><input data-field="reason" placeholder="Why, e.g. account closed" aria-label="Why it isn’t expected this year"><button type="button" class="btn small" data-act="not_applicable">Not expected</button></div>
+  <p class="muted small">{% if r.owner %}{{ r.owner }} · {% endif %}{% if e.expected_available_at %}expected by {{ e.expected_available_at.strftime('%b %-d') }} · {% endif %}{{ r.files|length }} file{{ 's' if r.files|length != 1 }} · {% if e.last_check %}checked {{ e.last_check.at.strftime('%b %-d') }}{% else %}never checked{% endif %}{% if e.applicability_note and e.applicability != 'applicable' %} · {{ e.applicability_note }}{% endif %}</p>
+</div>
+{% else %}
+<p class="muted small">No checklist row behind this square.</p>
+{% endfor %}

@@ -1,0 +1,5 @@
+# Synthetic (no §5 example)
+id: grantor-trust
+name: Grantor Trust
+kind: trust
+tin: ENC[age:PLACEHOLDER]

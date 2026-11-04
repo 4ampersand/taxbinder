@@ -1,0 +1,194 @@
+{% extends "page.html" %}
+{% block title %}Payments {{ year }}{% endblock %}
+{% block heading %}Payments · {{ year }}{% endblock %}
+{% block actions %}<button id="add-pay-open" type="button">＋ Add a payment</button>{% endblock %}
+{% block content %}
+<section class="panel upcoming">
+  <header><h2>Upcoming <span class="muted">{{ upcoming|length }}</span></h2><span class="tip">Planned and scheduled payments, all years. TaxBinder doesn't pay: pay at the payee's site or in your bank, then mark it paid here.</span></header>
+  {% if upcoming %}
+  <div class="table-wrap flat">
+  <table class="compact plain">
+    <thead><tr><th>Due</th><th>Pay on</th><th>Paid to</th><th>For</th><th>Tax year</th><th class="r">Amount</th><th>State</th><th class="r"></th></tr></thead>
+    <tbody>
+    {% for r in upcoming %}{% set c = r.c %}{% set p = c.plan %}
+    {% set overdue = p.due < today %}{% set soon = not overdue and (p.due - today).days <= 14 %}
+    <tr data-id="{{ c.id }}">
+      <td class="num {{ 'bad' if overdue else 'warn' if soon }}">{{ p.due.strftime('%b %-d, %Y') }}</td>
+      <td class="num">{{ p.pay_on.strftime('%b %-d, %Y') if p.pay_on else '—' }}</td>
+      <td class="c-src">{{ r.jurisdiction }}</td>
+      <td>{{ r.kind }}</td>
+      <td class="num" title="Counts in the year it's paid{{ ' (the tax year it applies to)' if c.category == 'tax_payment' }}">{{ c.year }}</td>
+      <td class="r num">{{ '{:,.2f}'.format(c.amount) if c.amount is not none else '' }}</td>
+      <td>{% if overdue %}<span class="pill error">Overdue</span>{% elif p.state == 'scheduled' %}<span class="pill info">Scheduled</span>{% else %}<span class="pill warn">Planned</span>{% endif %}</td>
+      <td class="actions"><div class="acts">
+        <button class="small secondary act-schedule" type="button" data-pay-on="{{ p.pay_on or '' }}" data-note="{{ p.note }}">{{ 'Reschedule' if p.state == 'scheduled' else 'Schedule' }}</button>
+        <button class="small act-paid" type="button" data-amount="{{ c.amount if c.amount is not none else '' }}">Mark paid</button>
+        <div class="menu-wrap">
+          <button class="link row-menu" type="button" aria-label="More actions" aria-expanded="false">•••</button>
+          <div class="menu" hidden>
+            <button class="item act-calendar" type="button">Add to Calendar</button>
+            {% if r.files %}<button class="item act-download" data-ids="{{ r.files|join(',') }}" type="button">Download bill</button>{% endif %}
+            <button class="item danger act-pay-delete" type="button">Delete</button>
+          </div>
+        </div>
+      </div></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}<p class="empty">Nothing to pay. To plan one, use <b>Add a payment</b> → To pay later.</p>{% endif %}
+</section>
+
+<section class="panel due-dates">
+  <header><h2>Estimated tax due dates · {{ year }}</h2><span class="tip">When each installment is due, if you make estimated payments.</span></header>
+  <table class="compact plain">
+    <tbody>
+    {% for r in due_dates %}{% set st = r.state %}
+    <tr>
+      <td><b>{{ r.name }}</b>{% if st and st.forms.estimated %} <span class="muted">{{ st.forms.estimated }}</span>{% endif %}</td>
+      <td>{% if r.schedule %}{% for d in r.schedule.due %}{{ d.strftime('%b %-d') }}{% if d.year != year %}, {{ d.year }}{% endif %}{{ ' · ' if not loop.last }}{% endfor %}
+        {% if not r.schedule.reviewed %} <span class="pill warn" title="Worked out from the state's published schedule; not yet checked by a person">not reviewed</span>{% endif %}
+        {% if st and st.note %}<br><span class="muted small-text">{{ st.note }}</span>{% endif %}
+      {% elif st %}{{ st.note or 'No estimated payments are required.' }}{% else %}<span class="muted">Not known for {{ year }} yet.</span>{% endif %}</td>
+      <td class="r">{% if st and st.page %}<a href="{{ st.page }}" target="_blank" rel="noopener">{{ 'Source' if 'taxadmin.org' in st.page else st.name ~ '’s page' }}</a>{% endif %}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% if not states_known %}<p class="muted small-text">Your state isn't known yet: confirm your household on Check.</p>{% endif %}
+</section>
+
+<h2>Paid for {{ year }}</h2>
+<div class="tiles">
+  <div class="tile"><small>Paid for {{ year }}</small><b class="num">${{ '{:,.2f}'.format(totals.values()|sum) }}</b><small>{{ rows|length }} payment{{ 's' if rows|length != 1 }}</small></div>
+  {% for j, amount in totals.items() %}
+  <div class="tile"><small>{{ j }}</small><b class="num">${{ '{:,.2f}'.format(amount) }}</b><small>{{ rows|selectattr('jurisdiction', 'equalto', j)|list|length }} payment(s)</small></div>
+  {% endfor %}
+</div>
+
+<div class="toolbar">
+  <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="payments-q" type="search" placeholder="Search payments…" aria-label="Search payments"></label>
+  <div class="chips" data-chips="payments">
+    <button class="chip on" data-filter="">All<b>{{ rows|length }}</b></button>
+    <button class="chip" data-filter="missing">Needs a confirmation<b>{{ missing }}</b></button>
+  </div>
+  <div class="row small-text">
+    <label class="muted" for="payments-group">Group by</label>
+    <select class="select" id="payments-group" data-grid-group="payments"><option value="juris">Paid to</option><option value="">No grouping</option></select>
+    <div class="menu-wrap"><button class="secondary small" type="button" data-grid-columns="payments" aria-expanded="false">⚙︎ Columns</button></div>
+  </div>
+</div>
+
+<input type="file" id="rowfile" class="hidden" accept=".pdf,.png,.jpg,.jpeg,.heic,.html,.htm">
+<div class="table-wrap">
+<table class="grid compact" data-table="payments" data-year="{{ year }}">
+  <thead><tr>
+    <th data-col="date" data-w="120" data-sort-type="date">Paid on</th>
+    <th data-col="juris" data-w="160">Paid to</th>
+    <th data-col="kind" data-w="170" data-flex>For</th>
+    <th data-col="amount" data-w="140" data-sort-type="num" class="r">Amount</th>
+    <th data-col="confirm" data-w="200">Confirmation</th>
+    <th data-col="source" data-w="150" data-hidden>Recorded from</th>
+    <th data-col="actions" data-w="210" data-locked class="r"></th>
+  </tr></thead>
+  <tbody>
+  {% for r in rows %}{% set c = r.c %}
+  <tr data-id="{{ c.id }}" data-status="{{ r.confirmation[0] }}" data-text="{{ (r.jurisdiction ~ ' ' ~ r.kind ~ ' ' ~ c.date ~ ' ' ~ c.amount)|lower }}" data-g-juris="{{ r.jurisdiction }}"
+      data-date="{{ c.date }}" data-amount="{{ c.amount }}"{% if c.plan %} data-payee="{{ c.plan.payee }}" data-label="{{ c.plan.label }}"{% endif %}>
+    <td class="num" data-sort="{{ c.date.isoformat() }}">{{ c.date.strftime('%b %-d, %Y') }}</td>
+    <td>{{ r.jurisdiction }}</td>
+    <td class="c-src">{{ r.kind }}</td>
+    <td class="r num" data-sort="{{ c.amount }}">{{ '{:,.2f}'.format(c.amount) }}</td>
+    <td><span class="pill {{ r.confirmation[2] }}">{{ r.confirmation[1] }}</span></td>
+    <td class="muted">{{ c.provenance or '' }}</td>
+    <td class="actions"><div class="acts">
+      {% if r.confirmation[0] == 'missing' %}<button class="small act-upload" type="button">Upload confirmation</button>{% endif %}
+      <div class="menu-wrap">
+        <button class="link row-menu" type="button" aria-label="More actions for this payment" aria-expanded="false">•••</button>
+        <div class="menu" hidden>
+          <button class="item act-upload" type="button">Attach a confirmation</button>
+          <button class="item act-upload" data-as="none" type="button">Attach another document</button>
+          {% if r.files %}<button class="item act-download" data-ids="{{ r.files|join(',') }}" type="button">Download files ({{ r.files|length }})</button>{% endif %}
+          <button class="item act-pay-edit" type="button">Edit…</button>
+          <button class="item danger act-pay-delete" type="button">Delete{{ ' (files stay in the vault)' if r.files }}</button>
+        </div>
+      </div>
+    </div></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="7" class="muted">No payments recorded for {{ year }} yet.</td></tr>
+  {% endfor %}
+  </tbody>
+  <tfoot><tr class="totals">
+    <td data-c="date">Total</td><td data-c="juris"></td><td data-c="kind"></td>
+    <td data-c="amount" class="r num" data-total="amount"></td><td data-c="confirm"></td><td data-c="source"></td><td data-c="actions"></td>
+  </tr></tfoot>
+</table>
+</div>
+<p class="tip">The checks compare these payments with the totals you entered and the due dates, and ask for a confirmation (the IRS's or the state's receipt, or a bank record) for each one.</p>
+
+<div class="scrim" id="schedule-dlg" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="schedule-title">
+    <header><h2 id="schedule-title">Schedule a payment</h2><button class="link" type="button" data-close="schedule-dlg" aria-label="Close">✕</button></header>
+    <div class="form">
+      <div class="field"><label for="sch-date">Scheduled for</label><input id="sch-date" type="date"></div>
+      <div class="field"><label for="sch-note">How <span class="muted">(optional)</span></label><input id="sch-note" placeholder="e.g. Chase bill pay"></div>
+      <label class="field wide check"><span><input id="sch-cal" type="checkbox" checked> Add to Calendar (alerts a week and a day before)</span></label>
+    </div>
+    <footer><button class="secondary" type="button" data-close="schedule-dlg">Cancel</button><button id="sch-save" type="button">Schedule</button></footer>
+  </div>
+</div>
+
+<div class="scrim" id="paid-dlg" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="paid-title">
+    <header><h2 id="paid-title">Mark paid</h2><button class="link" type="button" data-close="paid-dlg" aria-label="Close">✕</button></header>
+    <div class="form">
+      <div class="field"><label for="paid-date">Paid on</label><input id="paid-date" type="date"></div>
+      <div class="field"><label for="paid-amount">Amount paid</label><input id="paid-amount" class="num" inputmode="decimal"></div>
+      <div class="field wide"><label for="paid-file">Confirmation <span class="muted">(optional: receipt, bank record)</span></label><input id="paid-file" type="file" accept=".pdf,.png,.jpg,.jpeg,.heic,.html,.htm"></div>
+    </div>
+    <footer><button class="secondary" type="button" data-close="paid-dlg">Cancel</button><button id="paid-save" type="button">Mark paid</button></footer>
+  </div>
+</div>
+
+<div class="scrim" id="add-pay" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="add-pay-title">
+    <header><h2 id="add-pay-title">Add a payment</h2><button class="link" type="button" data-close="add-pay" aria-label="Close">✕</button></header>
+    <div class="form">
+      <div class="field"><label for="ap-kind">Kind</label><select id="ap-kind">{% for k, label in bill_kinds.items() %}<option value="{{ k }}">{{ label }}</option>{% endfor %}</select></div>
+      <div class="field"><span class="label-like">Is it paid?</span><div class="seg" role="group" aria-label="Is it paid?"><button type="button" id="ap-done" class="on">Already paid</button><button type="button" id="ap-later">To pay later</button></div></div>
+
+      <div class="field tax-only"><label for="ap-juris">Paid to</label><input id="ap-juris" list="pay-jurisdictions" placeholder="federal{{ ', ' ~ resident[0] if resident else ', or a state' }}"><datalist id="pay-jurisdictions"><option value="federal">{% for j in resident %}<option value="{{ j }}">{% endfor %}{% for j in totals %}{% if j != 'Federal' and j not in resident %}<option value="{{ j }}">{% endif %}{% endfor %}</datalist></div>
+      <div class="field tax-only"><label for="ap-qtr">For</label><select id="ap-qtr">{% for k, label in kinds.items() %}<option value="{{ k }}">{{ label }}</option>{% endfor %}</select></div>
+      <div class="field other-only" hidden><label for="ap-payee">Paid to</label><input id="ap-payee" placeholder="e.g. Hollis County"></div>
+      <div class="field other-only" hidden><label for="ap-label">What for <span class="muted">(optional)</span></label><input id="ap-label" placeholder="e.g. 1st installment"></div>
+
+      <div class="field paid-only"><label for="ap-date">Paid on</label><input id="ap-date" type="date"></div>
+      <div class="field paid-only"><label for="ap-amount">Amount</label><input id="ap-amount" class="num" inputmode="decimal" placeholder="$0.00"></div>
+      <div class="field wide paid-only"><label for="ap-file">Receipt / confirmation <span class="muted">(optional)</span></label><input id="ap-file" type="file" accept=".pdf,.png,.jpg,.jpeg,.heic,.html,.htm"></div>
+
+      <div class="field wide later-only" hidden><label>Installments <span class="muted">(amount and due date each)</span></label>
+        <div id="bill-rows" class="bill-rows"></div>
+        <button class="link" id="bill-add-row" type="button">＋ Another installment</button>
+      </div>
+      <div class="field wide later-only" hidden><label for="ap-billfile">The bill <span class="muted">(optional)</span></label><input id="ap-billfile" type="file" accept=".pdf,.png,.jpg,.jpeg,.heic"></div>
+      <p class="tip field wide" id="ap-hint">Q4, extension and balance payments made by April 15 count for the year before.</p>
+    </div>
+    <footer><button class="secondary" type="button" data-close="add-pay">Cancel</button><button id="ap-save" type="button">Add payment</button></footer>
+  </div>
+</div>
+
+<div class="scrim" id="edit-pay" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="edit-pay-title">
+    <header><h2 id="edit-pay-title">Edit payment</h2><button class="link" type="button" data-close="edit-pay" aria-label="Close">✕</button></header>
+    <div class="form">
+      <div class="field"><label for="ep-date">Paid on</label><input id="ep-date" type="date"></div>
+      <div class="field"><label for="ep-amount">Amount</label><input id="ep-amount" class="num" inputmode="decimal"></div>
+      <div class="field ep-plan"><label for="ep-payee">Paid to</label><input id="ep-payee"></div>
+      <div class="field ep-plan"><label for="ep-label">What for</label><input id="ep-label"></div>
+    </div>
+    <footer><button class="secondary" type="button" data-close="edit-pay">Cancel</button><button id="ep-save" type="button">Save</button></footer>
+  </div>
+</div>
+{% endblock %}

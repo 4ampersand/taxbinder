@@ -1,0 +1,5 @@
+{% if page_help %}<details class="help-pop">
+  <summary>Help</summary>
+  <div class="help-body">{% for p in page_help %}<p>{{ p }}</p>{% endfor %}
+    <p class="links"><a href="/help#privacy">What's stored where</a> · <a href="/help#about">About</a></p></div>
+</details>{% endif %}

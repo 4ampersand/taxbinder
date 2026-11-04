@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Add documents{% endblock %}
+{% block main %}
+{# The factory: add.js draws each document's steps from /api/add/status. #}
+<div class="head">
+  <div><small><a href="/">Your binder</a> › Add documents</small><h1 id="fx-head">Add your tax documents</h1></div>
+  <div class="row"><a class="btn ghost" id="fx-check" href="/check">Check what we found</a>{% include "_help.html" %}</div>
+</div>
+<p class="muted lede">Every document goes through the same careful steps, here on this Mac: its words read, what it is, who sent it, whose it is and its year, its amounts read by the rules and again by the AI model, then the rule book's checks. Any year's documents: each goes into the year printed on it.</p>
+{% if demo %}<section class="panel">
+  <p><b>The demo's documents:</b> this year's forms for the Quills, a scan, a phone photo and a damaged file.</p>
+  <div class="row"><button type="button" class="btn" id="fx-demo">Add the sample documents</button></div>
+</section>{% endif %}
+<div class="drop" id="fx-drop" data-exts="{{ upload_exts|join(',') }}">
+  <b class="full">Drop files{{ ' or a folder' if not remote }} here</b><b class="more">Add more: drop them anywhere on this page</b>
+  <div class="row">
+    <input type="file" id="fx-files" hidden multiple accept="{% for e in upload_exts %}.{{ e }}{{ ',' if not loop.last }}{% endfor %}">
+    <button type="button" class="btn ghost" id="fx-pick">Choose files…</button>
+    {% if not remote %}<input type="file" id="fx-folder" hidden webkitdirectory multiple>
+    <button type="button" class="btn ghost" id="fx-pick-folder">Choose a folder…</button>{% endif %}
+  </div>
+  <small class="muted full">PDFs, photos (JPEG, PNG, HEIC), saved web pages · up to 50 MB each · a file already added is skipped</small>
+</div>
+<p class="fx-say" id="fx-say" role="status"></p>
+<section class="panel factory" id="fx" aria-label="The steps each document goes through"{{ ' hidden' if not batch.total }}>
+  <div class="fx-line">
+    <ol class="stations" id="fx-stations">
+      {% for id, name, does, icon in stations %}<li class="st" data-step="{{ id }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ icon }}"/></svg>
+        <b>{{ name }}</b><small>{{ does }}</small><i class="tm" aria-hidden="true"></i>
+      </li>{% endfor %}
+    </ol>
+    <div class="belt" id="fx-belt" aria-hidden="true"></div>
+  </div>
+</section>
+<section class="panel asks" id="fx-asks" aria-labelledby="ask-head" aria-live="polite" hidden></section>
+<section class="panel bench" id="bench" aria-labelledby="bn-head" hidden>
+  <div class="row spread wrapping"><h2 id="bn-head">At the reading bench</h2><span class="muted small">Two readers work separately; the rule book has the last word. The AI model runs on this Mac, offline.</span></div>
+  <div class="bench-cols">
+    <div><h3><i class="sw rules"></i>The rules</h3><small class="muted">Find each box by its printed label and its place on the form.</small><div class="lines" id="bn-rules"></div></div>
+    <div><h3><i class="sw model"></i>The AI model</h3><small class="muted">Reads the page as a person would: good with odd layouts and photos.</small><div class="lines" id="bn-model"></div></div>
+    <div><h3><i class="sw kept"></i>What’s kept</h3><small class="muted">Its key boxes first: what Across the years follows. One both read the same is taken; any other needs a look. The rest are for reference.</small><div class="lines" id="bn-kept"></div></div>
+  </div>
+  <div><h3>The rule book</h3><div class="lines" id="bn-checks"></div></div>
+</section>
+<div class="fx-cards" id="fx-cards"></div>
+<section class="panel mail" id="mail" data-year="{{ mail_year }}" aria-labelledby="mail-head">
+  <h2 id="mail-head">What doesn’t come in the mail · {{ mail_year }}</h2>
+  <p class="muted">No form arrives for these, so they’re easy to miss. Your preparer asks about them every year.</p>
+  {% for m in mail %}
+  <div class="mrow" data-kind="{{ m.kind }}">
+    <span class="mk{{ ' got' if m.added or m.known }}{{ ' asked' if m.answer }}" aria-hidden="true">{{ m.added if m.added else ('✓' if m.known or m.answer == 'no' else ('?' if m.answer else '!')) }}</span>
+    <div>
+      <b>{{ m.name }}</b>
+      <small class="muted">{% if m.known %}{{ m.known }}{% elif m.added %}{{ m.added }} added so far{% if m.total %}, ${{ '{:,.0f}'.format(m.total) }}{% endif %}{% else %}Nothing yet{% endif %}{% if m.before %} · {{ m.before }}{% endif %}</small>
+    </div>
+    <div class="row mbtns">
+      <span class="said"{% if not m.answer %} hidden{% endif %}>{{ 'Not sure: your preparer will be asked' if m.answer == 'unsure' else ("That’s all" if m.added else 'None this year') }}</span>
+      <button type="button" class="link" data-answer="" {% if not m.answer %} hidden{% endif %}>Change</button>
+      {% if not m.known %}<a class="btn small" href="{{ m.href }}"{% if m.answer %} hidden{% endif %}>{{ 'Add another' if m.added else 'Add' }}</a>
+      <button type="button" class="btn small ghost" data-answer="no" data-said="{{ "That’s all" if m.added else 'None this year' }}"{% if m.answer %} hidden{% endif %}>{{ "That’s all" if m.added else 'None this year' }}</button>
+      <button type="button" class="link" data-answer="unsure" data-said="Not sure: your preparer will be asked"{% if m.answer %} hidden{% endif %}>Not sure</button>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</section>
+<p class="muted small">You can go to other pages; reading carries on. Nothing leaves this Mac: the AI model runs here, offline.</p>
+{% endblock %}
+{% block scripts %}<script src="/static/add.js"></script>{% endblock %}

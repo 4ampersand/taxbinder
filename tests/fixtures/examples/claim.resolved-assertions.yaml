@@ -1,0 +1,14 @@
+# §3.4 assertions + resolution
+id: 2025/donations/2025-10-04.daf-stock
+year: 2025
+category: donation
+date: 2025-10-04
+payee: GiftWell
+amount: 12511.20
+assertions:
+  - { value: 12380.40, source: "hand:summary", kind: hand_summary }
+  - { value: 12511.20, source: "hand:gifts", kind: hand_entry }
+  - { value: 12511.20, source: doc_7f3e21aa90bc, kind: document }
+resolved: { value: 12511.20, by: avery, basis: doc_7f3e21aa90bc, at: 2026-10-02 }
+donation:
+  type: securities

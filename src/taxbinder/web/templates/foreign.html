@@ -1,0 +1,80 @@
+{% extends "page.html" %}
+{% block title %}Foreign accounts {{ year }}{% endblock %}
+{% block heading %}Foreign accounts · {{ year }}{% endblock %}
+{% block actions %}<button id="add-fa-open" type="button">＋ Add an account</button>{% endblock %}
+{% block content %}
+{# Accounts abroad for the FBAR (FinCEN 114). A fact against the line, never advice. #}
+<div class="tiles">
+  {% for p in people %}<div class="tile"><small>{{ p.name }}: highest balances together</small><b class="num {{ 'warn' if p.over }}">${{ '{:,.0f}'.format(p.total) }}</b><small>{% if p.over %}over ${{ '{:,.0f}'.format(line) }}: an FBAR is needed{% else %}not over ${{ '{:,.0f}'.format(line) }}{% endif %}{% if p.unknown %} · {{ p.unknown }} without a rate, not counted{% endif %}</small></div>
+  {% else %}<div class="tile"><small>Accounts abroad in {{ year }}</small><b class="num">0</b><small>&nbsp;</small></div>{% endfor %}
+</div>
+
+<input type="file" id="rowfile" class="hidden" accept=".pdf,.png,.jpg,.jpeg,.heic,.html,.htm">
+<div class="table-wrap">
+<table class="grid compact" data-table="foreign" data-year="{{ year }}">
+  <thead><tr>
+    <th data-col="bank" data-w="180" data-flex>Bank</th>
+    <th data-col="account" data-w="170">Account</th>
+    <th data-col="whose" data-w="120">Whose</th>
+    <th data-col="currency" data-w="80">Currency</th>
+    <th data-col="max" data-w="140" data-sort-type="num" class="r">Highest balance</th>
+    <th data-col="interest" data-w="110" data-sort-type="num" class="r">Interest</th>
+    <th data-col="rate" data-w="110" data-sort-type="num" class="r" title="Year-end rate: units of the currency per US dollar">Rate per $</th>
+    <th data-col="usd" data-w="120" data-sort-type="num" class="r">In dollars</th>
+    <th data-col="files" data-w="110">Statements</th>
+    <th data-col="actions" data-w="190" data-locked class="r"></th>
+  </tr></thead>
+  <tbody>
+  {% for r in rows %}{% set fa = r.c.foreign_account %}
+  <tr data-id="{{ r.c.id }}" data-bank="{{ r.bank }}" data-account="{{ r.account }}" data-owner="{{ r.c.taxpayer or 'household' }}" data-currency="{{ fa.currency }}" data-max="{{ fa.max_balance }}" data-interest="{{ fa.interest or '' }}" data-rate="{{ fa.rate or '' }}">
+    <td class="c-src" title="{{ r.bank }}">{{ r.bank }}</td>
+    <td>{{ r.account }}</td>
+    <td>{{ r.whose }}</td>
+    <td>{{ fa.currency }}</td>
+    <td class="r num" data-sort="{{ fa.max_balance }}">{{ '{:,.2f}'.format(fa.max_balance) }}</td>
+    <td class="r num" data-sort="{{ fa.interest or 0 }}">{{ '{:,.2f}'.format(fa.interest) if fa.interest is not none else '' }}</td>
+    <td class="r num" data-sort="{{ fa.rate or 0 }}">{{ fa.rate if fa.rate else ('—' if fa.currency != 'USD' else '') }}</td>
+    <td class="r num {{ 'warn' if r.usd is none }}" data-sort="{{ r.usd or 0 }}">{{ '{:,.0f}'.format(r.usd) if r.usd is not none else 'rate needed' }}</td>
+    <td>{% if r.files %}<button class="link act-download" data-ids="{{ r.files|join(',') }}" type="button">{{ r.files|length }} file{{ 's' if r.files|length != 1 }}</button>{% else %}<span class="muted">none</span>{% endif %}</td>
+    <td class="actions"><div class="acts">
+      <button class="small act-upload" data-as="foreign_bank_statement" type="button" title="The bank's statement showing the account's balance">Attach statement</button>
+      <div class="menu-wrap">
+        <button class="link row-menu" type="button" aria-label="More actions for {{ r.bank }}, {{ r.account }}" aria-expanded="false">•••</button>
+        <div class="menu" hidden>
+          <button class="item act-fa-edit" type="button">Edit…</button>
+          <button class="item danger act-fa-delete" type="button">Delete{{ ' (files stay in the vault)' if r.files }}</button>
+        </div>
+      </div>
+    </div></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="10" class="muted">No accounts abroad recorded for {{ year }}. Use <b>Add an account</b>.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+{% if carry %}<section class="panel carry">
+  <h2>On last year’s list</h2>
+  <p class="muted">Add one for {{ year }}: the bank, account and currency are filled in; give this year’s highest balance.</p>
+  <ul class="carry-list">{% for r in carry %}<li data-source="{{ r.c.foreign_account.source }}" data-bank="{{ r.bank }}" data-account="{{ r.account }}" data-owner="{{ r.c.taxpayer or 'household' }}" data-currency="{{ r.c.foreign_account.currency }}"><b>{{ r.bank }}</b> · {{ r.account }} · {{ r.whose }} · {{ r.c.foreign_account.currency }} <button class="link act-fa-carry" type="button">Add for {{ year }}</button></li>{% endfor %}</ul>
+</section>{% endif %}
+
+<p class="tip">For each account abroad: its highest balance in the year, in its own currency, and the US Treasury’s year-end exchange rate (units per dollar). Together over ${{ '{:,.0f}'.format(line) }} for one person means an FBAR (FinCEN 114), filed on FinCEN’s site, not with the return. Attach the statements: they go to your preparer in 08-Foreign with a summary. A fact about the accounts, not advice.</p>
+
+<div class="scrim" id="add-fa" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="add-fa-title">
+    <header><h2 id="add-fa-title" data-add="Add an account abroad" data-edit="Edit the account">Add an account abroad</h2><button class="link" type="button" data-close="add-fa" aria-label="Close">✕</button></header>
+    <div class="form">
+      <div class="field wide fa-new"><label for="fa-bank">Bank</label><input id="fa-bank" list="fa-banks" autocomplete="off" placeholder="e.g. Lantern Bank"><datalist id="fa-banks">{% for n in banks %}<option value="{{ n }}">{% endfor %}</datalist></div>
+      <div class="field fa-new"><label for="fa-account">Account</label><input id="fa-account" autocomplete="off" placeholder="e.g. Savings …1234"><span class="tip">A name for it; the last 4 digits at most.</span></div>
+      <div class="field fa-new"><label for="fa-owner">Whose</label><select id="fa-owner">{% for t in taxpayers %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}<option value="household">Joint</option></select></div>
+      <div class="field"><label for="fa-currency">Currency</label><input id="fa-currency" maxlength="3" placeholder="EUR"></div>
+      <div class="field"><label for="fa-max">Highest balance in {{ year }}</label><input id="fa-max" class="num" inputmode="decimal" placeholder="in its currency"></div>
+      <div class="field"><label for="fa-interest">Interest paid <span class="muted">(optional)</span></label><input id="fa-interest" class="num" inputmode="decimal"></div>
+      <div class="field"><label for="fa-rate">Year-end rate per $ <span class="muted">(optional)</span></label><input id="fa-rate" class="num" inputmode="decimal" placeholder="e.g. 0.92"></div>
+    </div>
+    <footer><button class="secondary" type="button" data-close="add-fa">Cancel</button><button id="fa-save" type="button">Add account</button></footer>
+  </div>
+</div>
+{% endblock %}

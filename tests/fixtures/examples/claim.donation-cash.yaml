@@ -1,0 +1,19 @@
+# §5.5 donation (cash); `year` added (base field)
+id: 2025/donations/2025-02-26.friends-of-the-marsh-wrens
+year: 2025
+category: donation
+date: 2025-02-26
+payee: Friends of the Marsh Wrens
+payee_ein: null
+amount: 2000.00
+donation:
+  type: cash
+  method: credit_card
+  quid_pro_quo: false
+provenance: hand_entry
+requirements:
+  - id: written_acknowledgment
+    rule: R-DON-01
+    satisfied_by: null
+evidence: []
+status: evidence_requested

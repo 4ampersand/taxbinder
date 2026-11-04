@@ -1,0 +1,31 @@
+{% extends "page.html" %}
+{% block title %}History{% endblock %}
+{% block heading %}History{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <p class="tip">Every change to {{ entity.name }}'s vault, newest first. <b>Undo</b> puts the records back as they were before that change, and is itself recorded, so it can be undone too.</p>
+  <a class="btn ghost small-text" href="/history{{ '' if show_all else '?all=1' }}">{{ 'Hide automatic re-checks' if show_all else 'Show automatic re-checks too' }}</a>
+</div>
+<div class="table-wrap">
+<table class="compact plain">
+  <thead><tr><th>When</th><th>Who</th><th>What</th><th class="r">Records</th><th class="r"></th></tr></thead>
+  <tbody>
+  {% for c in changes %}{% set why = reasons.get(c.sha) %}
+  <tr data-sha="{{ c.sha }}">
+    <td class="num muted">{{ c.time.astimezone().strftime('%b %-d, %Y %H:%M') }}</td>
+    <td>{{ c.author }}</td>
+    <td class="what" title="{{ c.title }}">{{ c.title }}</td>
+    <td class="r num muted">{{ c.paths|length }}</td>
+    <td class="actions"><div class="acts">
+      {% if c.automatic %}<span class="muted small-text">automatic</span>
+      {% elif why %}<span class="muted small-text" title="{{ why }}">can't undo</span>
+      {% else %}<button class="small secondary act-undo" type="button">Undo</button>{% endif %}
+    </div></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="5" class="muted">No changes yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

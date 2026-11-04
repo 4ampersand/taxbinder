@@ -1,0 +1,42 @@
+{# The household: worked out, confirmed by a person. Moves into Check in R6.5. #}
+{% set h = house %}
+<section class="card household" id="household" data-year="{{ year }}" data-return-year="{{ h.return_year or '' }}">
+  {% if h.confirmed %}
+  <div class="row spread">
+    <p><b>Household:</b> {% for p in h.people %}{{ p.name }}{% if p.role and p.role != 'taxpayer' %} ({{ p.role }}){% elif p.kind != 'individual' %} ({{ p.kind }}){% endif %}{{ ' · ' if not loop.last }}{% endfor %}
+      · {{ filing_statuses.get(h.filing_status, 'filing status not set') }} · {{ state_names.get(h.state, 'state not set') if h.state else 'state not set' }}</p>
+    <button class="link act-house-change" type="button">Change</button>
+  </div>
+  {% else %}
+  <div class="row spread"><h2>Is this right?</h2>
+    <span class="muted small-text">{% if h.found_in == 'return' %}from your {{ h.return_year }} return{% elif h.found_in == 'documents' %}from the names on {{ h.documents }} document{{ 's' if h.documents != 1 }}{% else %}nothing to go on yet{% endif %}</span></div>
+  {% if h.people %}
+  <ul class="house-people">{% for p in h.people %}
+    <li>{{ p.name }} <span class="muted">{{ p.role or (p.kind if p.kind != 'individual' else 'who is this?') }}{% if p.last4 %} · SSN …{{ p.last4 }}{% endif %}</span></li>
+  {% endfor %}</ul>
+  {% else %}<p>Tell us who's in your household: the names on your tax return.</p>{% endif %}
+  <p>{% if h.filing_status %}{{ filing_statuses[h.filing_status] }}{% else %}<span class="muted">Filing status not known yet</span>{% endif %} ·
+    {% if h.state %}{{ state_names.get(h.state, h.state) }}{% if h.found_in == 'return' %} <span class="muted">(from the address)</span>{% endif %}{% else %}<span class="muted">State not known yet</span>{% endif %}</p>
+  <p class="row">
+    {% if h.complete and h.filing_status %}<button type="button" class="act-house-ok">Looks right</button>{% endif %}
+    <button type="button" class="{{ 'secondary ' if h.complete and h.filing_status }}act-house-change">{{ 'Change' if h.complete and h.filing_status else ('Say who’s who' if h.people else 'Add your household') }}</button>
+  </p>
+  {% endif %}
+  <script type="application/json" id="house-data">{{ house_data | tojson }}</script>
+</section>
+
+<div class="scrim" id="house-dlg" hidden>
+  <div class="dialog wide-dialog" role="dialog" aria-modal="true" aria-labelledby="house-title">
+    <header><h2 id="house-title">Your household</h2><button class="link" type="button" data-close="house-dlg" aria-label="Close">✕</button></header>
+    <div class="form">
+      <div class="field wide"><table class="grid compact house-table">
+        <thead><tr><th>Name</th><th>Who</th><th>Last 4 of SSN</th><th></th></tr></thead>
+        <tbody id="hd-people"></tbody></table></div>
+      <p class="field wide"><button class="link" type="button" id="hd-add">＋ Add a person</button> <button class="link" type="button" id="hd-add-trust">＋ Add a trust</button></p>
+      <div class="field"><label for="hd-status">Filing status</label><select id="hd-status"><option value="">Not sure</option>{% for v, t in filing_statuses.items() %}<option value="{{ v }}">{{ t }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="hd-state">State you live in</label><select id="hd-state"><option value="">Not sure</option>{% for code, name in state_names.items() %}<option value="{{ code }}">{{ name }}</option>{% endfor %}</select></div>
+      <p class="field wide muted small-text">Only the last 4 digits of a social security number are kept, never more.</p>
+    </div>
+    <footer><button class="secondary" type="button" data-close="house-dlg">Cancel</button><button id="hd-save" type="button">Save</button></footer>
+  </div>
+</div>

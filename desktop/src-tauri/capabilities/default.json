@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The main window only needs core window behaviour. It loads the local backend, which is treated as remote content, so it gets no IPC; portal windows (third-party sites) get no capabilities at all.",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

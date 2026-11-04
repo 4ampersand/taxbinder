@@ -1,0 +1,302 @@
+{
+  "$defs": {
+    "Dismissed": {
+      "additionalProperties": false,
+      "properties": {
+        "doc": {
+          "pattern": "^doc_[0-9a-f]{12}$",
+          "title": "Doc",
+          "type": "string"
+        },
+        "doc_type": {
+          "anyOf": [
+            {
+              "enum": [
+                "w2",
+                "1099_composite",
+                "1099_int",
+                "1099_div",
+                "1099_q",
+                "1099_r",
+                "1099_misc",
+                "1099_nec",
+                "ssa_1099",
+                "1098",
+                "5498",
+                "5498_sa",
+                "k1_1065",
+                "k1_state",
+                "k1_1120s",
+                "k1_1041",
+                "donation_ack",
+                "form_8283_support",
+                "payment_confirmation",
+                "property_tax_bill",
+                "vehicle_registration",
+                "account_change_notice",
+                "foreign_bank_statement",
+                "fbar_filing",
+                "tax_return",
+                "return_paper"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^x-[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string"
+            }
+          ],
+          "title": "Doc Type"
+        },
+        "source": {
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "doc_type",
+        "doc"
+      ],
+      "title": "Dismissed",
+      "type": "object"
+    },
+    "Figure": {
+      "additionalProperties": false,
+      "properties": {
+        "doc_type": {
+          "anyOf": [
+            {
+              "enum": [
+                "w2",
+                "1099_composite",
+                "1099_int",
+                "1099_div",
+                "1099_q",
+                "1099_r",
+                "1099_misc",
+                "1099_nec",
+                "ssa_1099",
+                "1098",
+                "5498",
+                "5498_sa",
+                "k1_1065",
+                "k1_state",
+                "k1_1120s",
+                "k1_1041",
+                "donation_ack",
+                "form_8283_support",
+                "payment_confirmation",
+                "property_tax_bill",
+                "vehicle_registration",
+                "account_change_notice",
+                "foreign_bank_statement",
+                "fbar_filing",
+                "tax_return",
+                "return_paper"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^x-[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string"
+            }
+          ],
+          "title": "Doc Type"
+        },
+        "source": {
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+          "title": "Source",
+          "type": "string"
+        },
+        "values": {
+          "description": "One per box. The first box's value lives on the year's checklist row (its Amount) when that row exists; it's stored here only when there's no such row.",
+          "items": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source",
+        "doc_type",
+        "values"
+      ],
+      "title": "Figure",
+      "type": "object"
+    },
+    "Suggestion": {
+      "additionalProperties": false,
+      "description": "Values read from the year's document, waiting for the person to accept or dismiss.",
+      "properties": {
+        "boxes": {
+          "default": [],
+          "description": "The boxes read (older ones: the row's at the time)",
+          "items": {
+            "type": "string"
+          },
+          "title": "Boxes",
+          "type": "array"
+        },
+        "checks": {
+          "default": [],
+          "description": "Why the values read need a look: a check of the form's arithmetic they fail (\"4 = 6.2% of 3\"), or the rules and the model read them differently",
+          "items": {
+            "type": "string"
+          },
+          "title": "Checks",
+          "type": "array"
+        },
+        "doc": {
+          "pattern": "^doc_[0-9a-f]{12}$",
+          "title": "Doc",
+          "type": "string"
+        },
+        "doc_type": {
+          "anyOf": [
+            {
+              "enum": [
+                "w2",
+                "1099_composite",
+                "1099_int",
+                "1099_div",
+                "1099_q",
+                "1099_r",
+                "1099_misc",
+                "1099_nec",
+                "ssa_1099",
+                "1098",
+                "5498",
+                "5498_sa",
+                "k1_1065",
+                "k1_state",
+                "k1_1120s",
+                "k1_1041",
+                "donation_ack",
+                "form_8283_support",
+                "payment_confirmation",
+                "property_tax_bill",
+                "vehicle_registration",
+                "account_change_notice",
+                "foreign_bank_statement",
+                "fbar_filing",
+                "tax_return",
+                "return_paper"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^x-[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string"
+            }
+          ],
+          "title": "Doc Type"
+        },
+        "pages": {
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Pages",
+          "type": "array"
+        },
+        "scanned": {
+          "default": false,
+          "description": "Read from a scan: check it against the paper",
+          "title": "Scanned",
+          "type": "boolean"
+        },
+        "source": {
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+          "title": "Source",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source",
+        "doc_type",
+        "doc",
+        "values"
+      ],
+      "title": "Suggestion",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "`years/<year>/figures.yaml`.",
+  "properties": {
+    "dismissed": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Dismissed"
+      },
+      "title": "Dismissed",
+      "type": "array"
+    },
+    "figures": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Figure"
+      },
+      "title": "Figures",
+      "type": "array"
+    },
+    "suggested": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Suggestion"
+      },
+      "title": "Suggested",
+      "type": "array"
+    },
+    "year": {
+      "maximum": 2100,
+      "minimum": 1990,
+      "title": "Year",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "year"
+  ],
+  "title": "FigureSet",
+  "type": "object"
+}

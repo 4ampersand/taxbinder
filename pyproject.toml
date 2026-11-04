@@ -1,0 +1,57 @@
+[project]
+name = "taxbinder"
+version = "0.10.0"
+description = "Track, collect and reconcile tax documents (macOS desktop app)."
+license = "AGPL-3.0-or-later"
+authors = [{ name = "Shahid Ahmed", email = "shahid@4ampersand.com" }]
+requires-python = ">=3.12"
+dependencies = [
+    "cryptography>=42",
+    "dulwich>=0.22",
+    "fastapi>=0.115,<1",
+    "jinja2>=3.1",
+    "keyring>=25",
+    "numpy>=2",
+    "onnxruntime>=1.20",
+    "openpyxl>=3.1",
+    "pdfplumber>=0.11",
+    "pi-heif>=0.20",
+    "pydantic>=2.8",
+    "pyrage>=1.2",
+    "ruamel-yaml>=0.18",
+    "typer>=0.12",
+    "uvicorn>=0.30,<1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+    "pyinstaller>=6.10",
+    "httpx2>=2.13",
+    "pymupdf>=1.24",
+    "rapidocr>=3.10",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/taxbinder"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+# Tests may run past the line length: the invented household's names and amounts read better
+# on one line.
+per-file-ignores = { "tests/*" = ["E501"] }
+
+[project.scripts]
+taxbinder = "taxbinder.cli:app"

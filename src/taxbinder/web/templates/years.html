@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Across the years{% endblock %}
+{% block main %}
+{# A year's cell for box i of a row: the row itself (i 0), else one of its sub-rows (a row
+   with several boxes shows its first; the others open beneath it). The ✓ ✕
+   take or turn down the year's whole reading, so they sit on the row's own cell. #}
+{% macro cell(r, y, i) %}{% set c = r.cells[y] %}{% set big = r.big(y, i) %}{% set part = c.part(i) %}
+        <td class="num ed{{ ' conflict' if c.conflict_at(i) or (i == 0 and c.conflict and not r.subs) }}" data-year="{{ y }}" data-value="{{ c.raw_at(i) if r.subs else c.raw }}" title="{{ r.tip(y) }}" tabindex="0" aria-label="{{ y }}, {{ r.sender }}, {{ r.label }}{{ ', box ' ~ r.boxes[i] if r.subs }}: {{ part[0] if part else 'nothing' }}. Enter to type an amount">
+          {% if i == 0 %}{% set acts = c.conflict or (c.read and (c.checks or c.scanned)) %}
+          {% if acts %}<span class="acts">
+            <button type="button" class="act" data-act="accept" aria-label="{{ 'Take the values from the document' if c.conflict else 'It’s right: keep it' }}">✓</button>
+            <button type="button" class="act" data-act="dismiss" aria-label="{{ 'Keep what’s typed' if c.conflict else 'It’s wrong: leave the box empty' }}">✕</button>
+            {% if c.doc %}<button type="button" class="link" data-view="{{ c.doc }}" data-page="{{ c.page }}" aria-label="View the {{ y }} document for {{ r.sender }}">View</button>{% endif %}
+          </span>{% elif c.doc %}<button type="button" class="link peek" data-view="{{ c.doc }}" data-page="{{ c.page }}" aria-label="View the {{ y }} document for {{ r.sender }}">View</button>{% endif %}{% endif %}
+          {% if part %}<span class="val"><span class="{{ 'neg' if part[1] }}">{{ part[0] }}</span></span>
+            {% if big %}<small class="note big" title="{{ big }}">big change</small>{% endif %}
+            {% if i and c.doubt_at(i) %}<small class="note">to check: ✓ ✕ on the row</small>{% elif i == 0 and r.hidden_doubt(y) %}<small class="note">another box to check</small>{% elif i == 0 and c.read and c.scanned %}<small class="note">from a scan: check</small>{% elif i == 0 and c.read and c.checks %}<small class="note">to check</small>{% endif %}
+          {% elif i %}<span class="mark" title="{{ c.symbol[1] or 'Nothing in this box' }}">·</span>
+          {% else %}<span class="mark m-{{ c.mark }}" title="{{ c.symbol[1] }}">{{ c.symbol[0] or '·' }}</span>{% endif %}
+        </td>{% endmacro %}
+<div class="head">
+  <div><small><a href="/">Your binder</a> › Across the years</small><h1>Across the years</h1></div>
+  <div class="row"><a class="btn ghost" href="/matrix.xlsx">Download as a spreadsheet</a>
+  <button type="button" class="btn" id="ay-add-open" aria-expanded="false" aria-controls="ay-add">Add a row</button>
+  {% include "_help.html" %}</div>
+</div>
+<section class="panel add-row" id="ay-add" hidden aria-labelledby="ay-add-h">
+  <h2 id="ay-add-h">Add a row</h2>
+  {% if choices %}
+  <div class="row wrapping">
+    <label>Document <select id="ay-doc">{% for s, t, label in choices %}<option value="{{ s }}|{{ t }}">{{ label }}</option>{% endfor %}</select></label>
+    <label>Box <input id="ay-boxes" placeholder="blank: the usual one" size="14"></label>
+    <button type="button" class="btn small" id="ay-add-go">Add</button>
+    <button type="button" class="btn small ghost" id="ay-add-all">Add all {{ choices|length }}</button>
+  </div>
+  {% else %}<p class="muted">Every document the binder expects already has a row.</p>{% endif %}
+  <p class="muted small">A document the binder doesn’t know yet (a new fund or account) starts with <a href="/#expect">Add to this year’s list</a> on its year’s card.</p>
+</section>
+<p class="say" id="ay-say" role="status"></p>
+{% if short %}<p class="tip" id="ay-short">W-2s now follow tax withheld too: federal (box 2), state wages and state tax (boxes 16, 17), each on a line under its row. <button type="button" class="btn small" id="ay-key-boxes">Add them to {{ short }} row{{ 's' if short != 1 }}</button></p>{% endif %}
+<p class="muted lede">Every document down the side, every year across: the amount in the row's referenced box, read from that year's document. Each row names who sent it, and the account when a sender has several.</p>
+{% if not rows %}
+<section class="panel"><h2>No rows yet</h2><p class="muted">Add a row above: each one is a document, followed through the years.</p></section>
+{% else %}
+<div class="tools">
+  <input type="search" id="ay-q" placeholder="Search senders, accounts, kinds…" aria-label="Search">
+  <span class="muted">Group by</span>
+  <div class="seg" role="group" aria-label="Group by">
+    <button type="button" data-group="sender" aria-pressed="true">Sender</button>
+    <button type="button" data-group="kind" aria-pressed="false">Kind</button>
+    <button type="button" data-group="" aria-pressed="false">No grouping</button>
+  </div>
+  {% if rows|selectattr('subs')|list %}<button type="button" class="btn small ghost" id="ay-open-all" aria-pressed="false">Open all</button>{% endif %}
+</div>
+<section class="panel flush">
+  <div class="scroll">
+    <table class="ay" id="ay">
+      <thead><tr><th>Sender</th><th>Kind</th><th>Box</th>{% for y in cols %}<th class="num">{{ y }}</th>{% endfor %}<th><span class="vh">Remove</span></th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+      {% set box = r.boxes[0] if r.boxes else '' %}
+      <tr class="r" data-source="{{ r.source.id }}" data-doc-type="{{ r.doc_type }}" data-sender="{{ r.sender }}" data-kind="{{ r.label }}" data-text="{{ (r.sender ~ ' ' ~ r.account ~ ' ' ~ r.label)|lower }}"{% if r.subs %} data-box="0"{% endif %}>
+        {% set acct = [r.account, r.ident]|select|join(' · ') %}
+        <th scope="row" class="who">{% if r.subs %}<button type="button" class="link open-sub{{ ' doubt' if r.hidden_doubt() }}" aria-expanded="false" aria-label="Show {{ r.subs|map(attribute=2)|select|join(', ') or 'its other boxes' }} for {{ r.sender }}, {{ r.label }}{{ ': one needs a look' if r.hidden_doubt() }}" title="{{ 'Show its other boxes' }}{{ ' (one needs a look)' if r.hidden_doubt() }}"></button>{% endif %}<b>{{ r.sender }}</b>{% if acct %}<small>{{ acct }}</small>{% endif %}</th>
+        <td class="kind">{{ r.label }}</td>
+        {% set cur = r.boxes|join(', ') %}
+        <td class="box">{% if r.options %}<select class="bx" data-was="{{ cur }}" aria-label="The box read for {{ r.sender }}, {{ r.label }}">
+          {% if cur not in r.options|map('first') %}<option value="{{ cur }}" selected>{% if r.subs %}{{ r.boxes[0] }} · {{ dict(r.options).get(r.boxes[0], '') }} + {{ r.subs|length }} below{% else %}{{ cur or '—' }}{% endif %}</option>{% endif %}
+          {% for b, label in r.options %}<option value="{{ b }}"{{ ' selected' if cur == b }}>{{ b }} · {{ label }}{{ ' (usual)' if b == r.usual }}</option>{% endfor %}
+          <option value="__other">Another box…</option>
+        </select>{% else %}<button type="button" class="link bx-type" data-was="{{ cur }}" aria-label="The box read for {{ r.sender }}, {{ r.label }}: {{ cur or 'none' }}. Change it">{{ cur or 'Choose a box' }}</button>{% endif %}</td>
+        {% for y in cols %}{{ cell(r, y, 0) }}{% endfor %}
+        <td class="rm"><button type="button" class="link rm-row" aria-label="Remove the row for {{ r.sender }}, {{ r.label }}">Remove</button></td>
+      </tr>
+      {% for i, b, name in r.subs %}
+      <tr class="sub" data-source="{{ r.source.id }}" data-doc-type="{{ r.doc_type }}" data-box="{{ i }}" data-of="{{ r.key }}" hidden>
+        <th scope="row" class="who">{{ name or 'Box ' ~ b }}</th><td class="kind"></td><td class="box">{{ b }}</td>
+        {% for y in cols %}{{ cell(r, y, i) }}{% endfor %}
+        <td class="rm"></td>
+      </tr>
+      {% endfor %}
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+<p class="muted small">· nothing that year · ✕ expected, never arrived · “big change”: 25% and $500, or a change of sign. A fact about the documents, not advice.</p>
+{% endif %}
+{% if given %}
+<section class="panel flush gifts" aria-labelledby="ay-gifts-h">
+  <header class="row spread"><h2 id="ay-gifts-h">Donations</h2><span class="muted small">Added and changed on <a href="/donations">Donations</a></span></header>
+  <div class="scroll">
+    <table class="ay" id="ay-gifts">
+      <thead><tr><th>Charity</th>{% for y in cols %}<th class="num"><a href="/donations?year={{ y }}" aria-label="Donations in {{ y }}">{{ y }}</a></th>{% endfor %}</tr></thead>
+      <tbody>
+      {% for g in given %}<tr>
+        <th scope="row" class="who"><b>{{ g.name }}</b>{% if g.from_daf %}<small>from your DAF</small>{% endif %}</th>
+        {% for y in cols %}<td class="num">{% if y in g.years %}{{ whole(g.years[y]) }}{% else %}<span class="mark" title="Nothing given that year">·</span>{% endif %}</td>{% endfor %}
+      </tr>{% endfor %}
+      </tbody>
+      <tfoot><tr><th scope="row">Total given</th>{% for y in cols %}<td class="num"><b>{{ whole(given_total[y]) if y in given_total else '·' }}</b></td>{% endfor %}</tr></tfoot>
+    </table>
+  </div>
+</section>
+{% if given|selectattr('from_daf')|list %}<p class="muted small">Grants from your donor-advised fund aren’t in the total: the gift counted when the money went into the fund.</p>{% endif %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,109 @@
+{
+  "$defs": {
+    "MatrixRow": {
+      "additionalProperties": false,
+      "properties": {
+        "boxes": {
+          "default": [],
+          "description": "e.g. ['1', '5']: one value per box",
+          "items": {
+            "type": "string"
+          },
+          "title": "Boxes",
+          "type": "array"
+        },
+        "doc_type": {
+          "anyOf": [
+            {
+              "enum": [
+                "w2",
+                "1099_composite",
+                "1099_int",
+                "1099_div",
+                "1099_q",
+                "1099_r",
+                "1099_misc",
+                "1099_nec",
+                "ssa_1099",
+                "1098",
+                "5498",
+                "5498_sa",
+                "k1_1065",
+                "k1_state",
+                "k1_1120s",
+                "k1_1041",
+                "donation_ack",
+                "form_8283_support",
+                "payment_confirmation",
+                "property_tax_bill",
+                "vehicle_registration",
+                "account_change_notice",
+                "foreign_bank_statement",
+                "fbar_filing",
+                "tax_return",
+                "return_paper"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^x-[a-z0-9]+(?:-[a-z0-9]+)*$",
+              "type": "string"
+            }
+          ],
+          "title": "Doc Type"
+        },
+        "own": {
+          "default": false,
+          "description": "Box set by the person: changing the form's usual box leaves it",
+          "title": "Own",
+          "type": "boolean"
+        },
+        "source": {
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$",
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "doc_type"
+      ],
+      "title": "MatrixRow",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "`registry/matrix.yaml`: the rows, in order, once the person changes them.",
+  "properties": {
+    "first_year": {
+      "anyOf": [
+        {
+          "maximum": 2100,
+          "minimum": 1990,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "First Year"
+    },
+    "id": {
+      "const": "matrix",
+      "default": "matrix",
+      "title": "Id",
+      "type": "string"
+    },
+    "rows": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/MatrixRow"
+      },
+      "title": "Rows",
+      "type": "array"
+    }
+  },
+  "title": "MatrixLayout",
+  "type": "object"
+}

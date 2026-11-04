@@ -1,0 +1,34 @@
+{% extends "page.html" %}
+{% block title %}Privacy{% endblock %}
+{% block heading %}Privacy for AI chats{% endblock %}
+{% block content %}
+<p class="muted">To ask an AI chat (e.g. Claude) about your documents, select them on the <a href="/documents">Documents</a> page and choose <b>Prepare for chat</b>. TaxBinder replaces personal details with placeholders such as <code>[TIN_01]</code> or <code>[PERSON_02]</code>; the same value always gets the same placeholder. TaxBinder doesn't send the text to the chat: you paste it in yourself.</p>
+
+<section class="card">
+  <h2>Private details</h2>
+  <p class="muted small-text">Already hidden without listing them here: every taxpayer's name and SSN/EIN, and every account number in the vault (old numbers too). Add what the vault doesn't know: other names (a spouse's maiden name, children, beneficiaries), street addresses, other numbers. Stored encrypted; shown here masked.</p>
+  <table class="plain">
+    <tbody>
+    {% for shown, v in values %}
+      <tr data-index="{{ loop.index0 }}"><td>{{ kinds.get(v.kind, v.kind) }}</td><td class="num">{{ shown }}</td><td class="muted">{{ v.note }}</td><td class="r"><button class="link danger act-private-remove" type="button">Remove</button></td></tr>
+    {% else %}
+      <tr><td class="muted">Nothing added yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <div class="form inline-form">
+    <div class="field"><label for="pv-kind">Kind</label><select id="pv-kind">{% for k, label in kinds.items() %}<option value="{{ k }}">{{ label }}</option>{% endfor %}</select></div>
+    <div class="field wide"><label for="pv-value">Value</label><input id="pv-value" autocomplete="off" spellcheck="false" placeholder="a name, a street address, a number…"></div>
+    <div class="field"><label for="pv-note">Note <span class="muted">(optional)</span></label><input id="pv-note" placeholder="e.g. spouse"></div>
+    <div class="field"><button id="pv-add" type="button">Add</button></div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Translate an answer</h2>
+  <p class="muted small-text">Paste the AI's reply: placeholders become the real values again. Shown here only; nothing is saved.</p>
+  <textarea id="ua-in" rows="8" class="mono-area" placeholder="Paste the reply here…"></textarea>
+  <div class="row"><button id="ua-go" type="button">Translate</button></div>
+  <div id="ua-out" class="translated" hidden></div>
+</section>
+{% endblock %}

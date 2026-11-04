@@ -1,0 +1,31 @@
+# Rule parameters for tax year 2025, Form 1120-S (S corporation) (§8.1a). Findings record this file's hash.
+# Federal dates only: a state's come from rules/states.yaml. Set reviewed_by/at once a person
+# has checked this file against the IRS's own schedules.
+reviewed_by: null
+reviewed_at: null
+source_notes: "Form 1120-S (S corporation): IRS due dates (weekends moved to Monday); not yet reviewed"
+
+R-EXP-01:
+  days: [21, 7]                   # reminders before the filing deadline
+  deadline: 2026-03-16
+  extended_deadline: 2026-09-15   # used when year.yaml says extension_filed
+R-EXP-02: { days: 3 }             # received but not vaulted
+R-EXP-05: { days: 7, season_start: 2026-01-15 }
+R-SRC-06: { lookback_days: 365 }
+
+R-DON-01: { cash_ack_threshold: 250 }
+R-DON-02: { form_8283_threshold: 500, appraisal_threshold: 5000 }
+R-DON-04: { tolerance: 1 }
+R-DON-06: { long_term_days: 365 }
+R-DON-07: { quid_pro_quo_threshold: 75 }
+R-DON-10: { tolerance: 1 }
+
+R-PAY-01: { tolerance: 1 }
+R-PAY-03:                       # pass-through returns: no federal estimated payments
+  due: {}
+  quarters: {}
+
+R-CON-01: { tolerance: 1 }
+R-CON-03: { days: 3 }
+
+R-FOR-01: { fbar_aggregate_threshold: 10000, treasury_rate_default: null }

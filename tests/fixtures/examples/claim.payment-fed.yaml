@@ -1,0 +1,13 @@
+# §5.5 estimated / extension payment; `year` added (base field)
+id: 2025/payments/fed.2026-03-31
+year: 2025
+category: tax_payment
+jurisdiction: federal
+date: 2026-03-31
+amount: 64000.00
+payment:
+  kind: extension
+  applied_to_year: 2025
+  channel: eftps
+  confirmation_number: ENC[age:PLACEHOLDER]
+evidence: []

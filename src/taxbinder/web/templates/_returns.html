@@ -1,0 +1,45 @@
+{# The year's tax returns: federal first, then states; papers under their return. #}
+{% if returns %}
+<section class="card returns">
+  <div class="row spread"><h2>Returns · {{ year }}</h2><span class="muted small-text">draft or the filed copy: say which</span></div>
+  <table class="grid compact">
+    <tbody>
+    {% for r in returns %}{% set i = r.info %}
+    <tr data-id="{{ r.doc.id }}">
+      <td>{{ 'Federal' if i.jurisdiction == 'federal' else state_names.get(i.jurisdiction, i.jurisdiction) }}</td>
+      <td><b>{{ 'Form ' ~ i.form if i.form[:1].isdigit() else i.form }}</b>{% if i.amended %} <span class="pill warning">amended</span>{% endif %}{% if i.resident is false %} <span class="pill">non-resident</span>{% endif %}{% if r.doc.classification.doc_type == 'return_paper' %} <span class="pill">paper</span>{% endif %}</td>
+      <td class="c-src"><a href="/documents/{{ r.doc.id }}/file" target="_blank" rel="noopener">{{ r.doc.original_filename }}</a></td>
+      <td class="r">{% if r.doc.classification.doc_type == 'tax_return' %}<select class="select ret-status" aria-label="Draft or filed">
+        {% for v, t in [('unsure', 'Not sure'), ('draft', 'Draft'), ('filed', 'Filed copy')] %}<option value="{{ v }}"{{ ' selected' if i.status == v }}>{{ t }}</option>{% endfor %}
+      </select>{% endif %}</td>
+    </tr>
+    {% if r.doc.id in reads %}{% set rd = reads[r.doc.id] %}{% set read = rd.read %}
+    <tr class="sub"><td></td><td colspan="3" class="return-read">
+      <p><b>Read from this return:</b>
+        {{ filing_statuses.get(read.filing_status, 'filing status not read') }}{% for p in read.people %} · {{ p.name }}{% if p.role == 'dependent' %} (dependent){% endif %}{% endfor %}{% if read.state %} · {{ state_names.get(read.state, read.state) }}{% endif %}.
+        <span class="muted">You'll confirm these when you set up the household.</span></p>
+      {% if rd.listed %}{% set missing = rd.listed | rejectattr('here') | list %}
+      <details{{ ' open' if missing }}>
+        <summary>Listed on the return: {{ rd.listed | length }} · here {{ rd.listed | length - missing | length }}{% if missing %} · <b>no document yet {{ missing | length }}</b>{% endif %}</summary>
+        <ul class="listed">{% for s in rd.listed %}
+          <li>{{ s.item.name }} <span class="muted">{{ labels.get(s.item.doc_type, s.item.doc_type) }}</span>
+            {% if s.here %}<span class="pill ok">here</span>{% elif s.row %}<span class="pill warning">expected, no document yet</span>{% else %}<span class="pill warning">no document yet</span>{% endif %}</li>
+        {% endfor %}</ul>
+      </details>
+      <p class="row">
+        {% if rd.add_now %}<button type="button" class="act-add-listed" data-id="{{ r.doc.id }}" data-year="{{ year }}">Add the {{ rd.add_now }} missing to {{ year }}’s checklist</button>{% endif %}
+        {% if rd.add_next %}<button type="button" class="act-add-listed" data-id="{{ r.doc.id }}" data-year="{{ year + 1 }}">Add {{ rd.add_next }} to {{ year + 1 }}’s checklist</button>{% endif %}
+      </p>{% endif %}
+      {% for kind in read.totals_only %}<p class="muted">{{ totals_only[kind] }} <a href="/?year={{ year + 1 }}#expect">Expect it in {{ year + 1 }}</a></p>{% endfor %}
+    </td></tr>
+    {% endif %}
+    {% for p, pi in r.papers %}
+    <tr data-id="{{ p.id }}" class="sub">
+      <td></td><td class="muted">{{ 'Form ' ~ pi.form if pi.form[:1].isdigit() else pi.form }} {{ paper_names.get(pi.form, '') }}</td>
+      <td class="c-src"><a href="/documents/{{ p.id }}/file" target="_blank" rel="noopener">{{ p.original_filename }}</a></td><td></td>
+    </tr>
+    {% endfor %}{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}

@@ -1,0 +1,35 @@
+{
+  "additionalProperties": false,
+  "description": "Who this vault files for (`registry/entity.yaml`); a vault without one is the household.",
+  "properties": {
+    "form": {
+      "default": "1040",
+      "enum": [
+        "1040",
+        "1120",
+        "1120-S",
+        "1065",
+        "1041"
+      ],
+      "title": "Form",
+      "type": "string"
+    },
+    "id": {
+      "const": "entity",
+      "default": "entity",
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "title": "EntityInfo",
+  "type": "object"
+}

@@ -1,0 +1,214 @@
+{
+  "$defs": {
+    "PackageMade": {
+      "additionalProperties": false,
+      "description": "The last .zip for the preparer: when, and which documents went in. Never \"sent\":\nTaxBinder can't know that.",
+      "properties": {
+        "documents": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Documents",
+          "type": "array"
+        },
+        "made_at": {
+          "format": "date-time",
+          "title": "Made At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "made_at"
+      ],
+      "title": "PackageMade",
+      "type": "object"
+    },
+    "Preparer": {
+      "additionalProperties": false,
+      "properties": {
+        "channel": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Channel"
+        },
+        "firm": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Firm"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Preparer",
+      "type": "object"
+    },
+    "Summary": {
+      "additionalProperties": false,
+      "description": "A hand-entered total to check detail against (\u00a715), e.g. the checklist's federal\nestimates figure. `subject` is an expectation id or `<claim category>/<qualifier>`.",
+      "properties": {
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "subject": {
+          "title": "Subject",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "subject",
+        "value",
+        "source"
+      ],
+      "title": "Summary",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "asked": {
+      "additionalProperties": {
+        "enum": [
+          "no",
+          "unsure"
+        ],
+        "type": "string"
+      },
+      "default": {},
+      "description": "Results' questions answered No or Not sure, ask my preparer",
+      "title": "Asked",
+      "type": "object"
+    },
+    "deadlines": {
+      "additionalProperties": {
+        "format": "date",
+        "type": "string"
+      },
+      "default": {},
+      "title": "Deadlines",
+      "type": "object"
+    },
+    "extension_filed": {
+      "default": false,
+      "title": "Extension Filed",
+      "type": "boolean"
+    },
+    "filing_status": {
+      "anyOf": [
+        {
+          "enum": [
+            "single",
+            "married_filing_jointly",
+            "married_filing_separately",
+            "head_of_household",
+            "qualifying_surviving_spouse"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Filing Status"
+    },
+    "moved_on": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "A move: the first state until this day, the second from it",
+      "title": "Moved On"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    },
+    "package": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PackageMade"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "preparer": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Preparer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "resident_states": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Resident States",
+      "type": "array"
+    },
+    "summaries": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Summary"
+      },
+      "title": "Summaries",
+      "type": "array"
+    },
+    "year": {
+      "title": "Year",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "year"
+  ],
+  "title": "YearConfig",
+  "type": "object"
+}

@@ -1,0 +1,176 @@
+{% extends "page.html" %}
+{% block title %}Help{% endblock %}
+{% block crumb %}TaxBinder {{ app_version }}{% endblock %}
+{% block heading %}Help{% endblock %}
+{% block content %}
+{# Help and its topics: not tax advice, the privacy statement (what's stored where, what's encrypted
+   and what isn't, what goes over the network) and About. Says only what the code does. #}
+{# The demo #}
+{% if not remote %}<section class="card" id="demo">
+  <div class="row spread"><h2>Try with sample data</h2>{% if not demo %}<button type="button" class="secondary demo-start">Open the demo</button>{% endif %}</div>
+  <p class="muted">{% if demo %}You're in the demo now: the bar at the top leaves it.{% else %}See TaxBinder with an invented family's documents, in a binder of its own: nothing of yours is shown or changed.{% endif %}</p>
+</section>{% endif %}
+
+<section class="card" id="advice">
+  <h2>Not tax advice</h2>
+  <p>TaxBinder keeps your tax documents in order and shows what's missing. It doesn't give tax advice and doesn't prepare or file returns: your tax preparer is the one to ask.</p>
+</section>
+
+<nav class="card help-topics" aria-label="Help topics">
+  <h2>Topics</h2>
+  <ul>
+    <li><a href="#text-size">Larger text, and the keyboard</a></li>
+    <li><a href="#binder-deck">Your binder as a deck of years</a></li>
+    <li><a href="#adding">Adding documents, and what TaxBinder asks</a></li>
+    <li><a href="#preparer-papers">Papers for your preparer, and accounts abroad</a></li>
+    <li><a href="#seeing">Seeing a document</a></li>
+    <li><a href="#issuers">How TaxBinder tells senders apart</a></li>
+    <li><a href="#privacy">What's stored where, and what's encrypted</a></li>
+    <li><a href="#network">What goes over the network</a></li>
+    <li><a href="#where">Where your data is</a></li>
+    <li><a href="#backups">Backups and the recovery key: what each brings back</a></li>
+    <li><a href="#new-mac">Moving to a new Mac</a></li>
+    <li><a href="#uninstall">Uninstalling: what stays behind</a></li>
+    {% if not remote %}<li><a href="#report">Report a problem</a></li>{% endif %}
+    <li><a href="#about">About and licences</a></li>
+  </ul>
+</nav>
+
+<section class="card" id="text-size">
+  <h2>Larger text</h2>
+  <p>{% if remote %}Use your browser's zoom to make everything larger.{% else %}In TaxBinder's window: <b>View › Make Text Bigger</b> (⌘+), <b>Make Text Smaller</b> (⌘−) and <b>Actual Size</b> (⌘0), up to twice the size. In a browser, use its own zoom.{% endif %} Everything works from the keyboard too: Tab moves between controls, and the first Tab on each page offers to skip the bar at the top.</p>
+</section>
+
+<section class="card" id="binder-deck">
+  <h2>Your binder as a deck of years</h2>
+  <p>The first page, <b>Your binder</b>, shows a deck of cards, one for each tax year, the year you're working on in front. Down a card are the senders of your documents, and across it the kinds of document; each square is one sender's documents of one kind that year. The key under the deck says what each square's look means: in your binder, to come, never arrived, or came the year before but isn't on this year's list. Click a year's tab to bring its card forward (Add documents, Check and Documents then open on that year; Documents has its own Year menu, all years included); a long card scrolls inside itself.</p>
+  <p>Click a square to see it beside the deck: view the document, type its amount (each named by its box, e.g. “Box 2 · Net rental real estate income”, with what was read from the document until you type one; a W-2 shows its four boxes), pick another box to follow (that sender's row changes in every year, so the years compare), a comment or the sender's website, add or download its file, mark it checked (with “Tick documents one by one” on, in Settings), or mark it not expected this year with a short reason, so you remember why next year. Rows not expected are listed beside their year, with <b>Expected again</b>. <b>Add to this year’s list</b>, on each card, adds a document still to come that the binder doesn't know yet (a file you already have goes in with Add documents), a new kind of document included.</p>
+  <p>Beside the deck, for the year in front: what's still to come, the year's checks and what to look at, whether it's ready for your preparer, and what TaxBinder noticed. <b>Start</b> next year and <b>An earlier year</b> are above the deck. <b>Across the years</b> shows the same as a table, one row per document and a column per year. Reduce motion (in the Mac's Accessibility settings) moves the cards without animating them.</p>
+</section>
+
+<section class="card" id="adding">
+  <h2>Adding documents, and what TaxBinder asks</h2>
+  <p>On <b>Add documents</b>, each file goes through the same steps on this Mac: its words read, what it is, who sent it, whose it is and its year, its amounts read by the rules and again by the AI model, then the rule book's checks. When the last one is done, anything TaxBinder couldn't be sure of is asked right there, under the belt: what it is, its year, who sent it, whose it is, two copies of one form, or an amount the two readers didn't agree on. Each answer can be undone in Changes. Then <b>Looks good, file them</b> puts them in your binder. <b>Check</b> asks the same questions about documents that arrive other ways, such as the inbox folder or a portal window.</p>
+  <p>Only the amounts that matter are asked about: the box a document's row follows in Across the years, and for a W-2 its wages, federal tax withheld, state wages and state tax withheld (boxes 1, 2, 16 and 17); for a consolidated 1099 (one statement holding a 1099-DIV, a 1099-INT and a 1099-B), its ordinary dividends, interest, capital gain distributions and the 1099-B's net gain or loss (its summary rows added up). A consolidated 1099 also counts for a row that expects a 1099-INT or a 1099-DIV from that account. The reading bench shows every box read; the others are there for reference and ask nothing. In <b>Across the years</b>, a row that follows several boxes shows the first; the arrow beside it opens the others beneath it, one line each, typed into like any amount. <b>Open all</b> opens every one.</p>
+</section>
+
+<section class="card" id="preparer-papers">
+  <h2>Papers for your preparer, and accounts abroad</h2>
+  <p>Your preparer may need papers no form covers: statements for an FBAR, a letter, a closing statement. On each year's card, <b>For my preparer</b> takes them with a note saying what each is for. TaxBinder keeps them as they are: it doesn't read them, ask about them or check them, and they go to your preparer in their own folder, named by your notes. A file already in your binder can be moved there from Documents (••• › For my preparer…). The next year's card reminds you of last year's papers.</p>
+  <p><b>Foreign accounts</b> (beside Donations) lists your accounts abroad for the year: the highest balance in its own currency, the interest, and the year-end exchange rate. It adds up each person's accounts in dollars (a joint account counts in full for each owner) against the $10,000 FBAR line. That's a fact about the accounts, not advice: your preparer decides, and the FBAR is filed on FinCEN's site, not with the return. Attach each account's statements; they go to your preparer with a summary. Next year, last year's accounts are offered again.</p>
+</section>
+
+<section class="card" id="seeing">
+  <h2>Seeing a document</h2>
+  <p><b>View</b> opens a document inside TaxBinder: from a square on Your binder, from an amount in Across the years (it opens at the page the amount was read from), on Check, and in Documents (click a file's name). It opens beside the page, not over it: the page stays in sight and usable, so you can answer a question or type an amount while you read the document (<b>Wider</b> widens it on Your binder). On Check and Documents, zoom with + and −, or the + and − keys. Esc or ✕ closes it. What you see are pictures of the pages drawn on this Mac, not the file itself, so nothing in a file can run inside TaxBinder; they aren't kept anywhere. A saved web page isn't shown: save it to Downloads to open it.</p>
+</section>
+
+<section class="card" id="issuers">
+  <h2>How TaxBinder tells senders apart</h2>
+  <p>Every sender of a tax form has an EIN, the number printed beside its name (on a K-1, the partnership's, in box A). TaxBinder keeps it with each document, so a sender is the same in every year only if its EIN is: two funds with similar names but different EINs stay apart, and a K-1 is only ever compared with the same partnership's K-1. When the EIN can't be read on a scan, the AI model on this Mac reads it, and it's used only if it's on the page or is one your binder already knows. A sender renamed beyond recognition but with the same EIN is offered to you once, as a note; nothing waits for it. An EIN is only ever shown as its last 4 digits.</p>
+</section>
+
+<section class="card stack" id="privacy">
+  <h2>What's stored where</h2>
+  <p>Everything TaxBinder keeps is on this Mac, in your binder's folder{% if not remote %}: <code>{{ vault }}</code>{% endif %}.</p>
+  <h3>Encrypted</h3>
+  <ul>
+    <li>The documents themselves: every PDF, scan and photo.</li>
+    <li>The text read from scans and photos, and what the AI model read on each document.</li>
+    <li>Account numbers, routing numbers, Social Security numbers, EINs, and payment confirmation numbers, wherever they're kept.</li>
+    <li>The values you list to hide from text for an AI chat.</li>
+    <li>Backups, whole: names and amounts included.</li>
+  </ul>
+  <p class="muted small-text">The key that opens your binder is in this Mac's Keychain. TaxBinder doesn't keep your recovery key anywhere: only you have it.</p>
+  <h3>Not encrypted</h3>
+  <ul>
+    <li>Names of people, institutions and charities; amounts; dates; what each document is; your checklist and notes; and what's read from a tax return, apart from Social Security numbers. These are kept as plain files in your binder's folder, protected by your Mac's login (and by FileVault, when it's turned on in System Settings).</li>
+    <li>Files put in the inbox folder, until they're filed (then they're removed from it).</li>
+    <li>What you make to use elsewhere: the .zip for your preparer, the Excel file, documents you save, and text copied for an AI chat. They go into {% if remote %}the Mac's Downloads folder{% else %}<code>{{ folder }}</code>{% endif %} or onto the clipboard.</li>
+  </ul>
+</section>
+
+<section class="card stack" id="network">
+  <h2>What goes over the network</h2>
+  <p>TaxBinder doesn't send your data anywhere by itself. It has no usage tracking, no crash reporting and no AI service on the internet. It reads documents (scans included) on this Mac: with its rules, and with an AI model that runs on this Mac once you download it.</p>
+  <p>Things go over the network only when you choose them:</p>
+  <ul>
+    <li><b>Institution websites</b> you open from TaxBinder: what you do there is between you and that website.</li>
+    <li><b>Home sharing</b>, off until you turn it on: only devices you pair, on your home network, over an encrypted connection.</li>
+    <li><b>Printing</b>, to the printer you pick.</li>
+    <li><b>The AI model</b>, when you download it in Settings: its files come from Hugging Face, where its makers publish them, and are checked before they're used. Nothing about you or your documents is sent.</li>
+    <li><b>What you copy or save and then send yourself</b>, such as the .zip for your preparer.</li>
+  </ul>
+  <p class="muted small-text">Updates: TaxBinder doesn't check for them yet. When it does, it will ask GitHub for the latest version number, with none of your tax data.</p>
+</section>
+
+<section class="card stack" id="where">
+  <h2>Where your data is</h2>
+  <ul>
+    <li><b>Your binder</b>: {% if remote %}in TaxBinder's folder on the Mac{% else %}<code>{{ where.binder }}</code>{% endif %}. Documents, records and the history of changes, all in this one folder.</li>
+    <li><b>Other filers</b> (trusts, businesses), each in a binder of its own: {% if remote %}beside it{% else %}<code>{{ where.others }}</code>{% endif %}.</li>
+    <li><b>The demo</b>, the invented family: {% if remote %}beside it{% else %}<code>{{ where.demo }}</code>{% endif %}. It's never backed up.</li>
+    <li><b>The AI model</b>, if you downloaded one: {% if remote %}beside your binder{% else %}<code>{{ where.models }}</code>{% endif %}. Its files are the same for everyone, nothing of yours; it isn't backed up (download it again on another Mac).</li>
+    <li><b>The key that opens your binders</b>: in this Mac's Keychain, under “{{ where.keychain }}”.</li>
+    <li><b>Website sign-ins</b> from institution windows: kept by macOS for TaxBinder{% if not remote %}, in {% for w in where.web %}<code>{{ w }}</code>{{ ' and ' if not loop.last }}{% endfor %}{% endif %}.</li>
+    <li><b>What you make</b> (backups, the .zip for your preparer, Excel files, saved documents): in {% if remote %}the Mac's Downloads folder{% else %}<code>{{ folder }}</code>{% endif %}, where you choose what happens to them.</li>
+  </ul>
+  <p class="muted small-text">Don't move or change files inside the binder's folder yourself: TaxBinder keeps track of each one.</p>
+</section>
+
+<section class="card stack" id="backups">
+  <h2>Backups and the recovery key</h2>
+  <p>A <b>backup</b> is one encrypted file with every binder (yours and each filer's): all documents, records and the history of changes. The <b>recovery key</b> is a line of text you keep, away from the Mac; it opens your binder and your backups. <b>This Mac's key</b> (in the Keychain) opens them too; Keep it safe can show it.</p>
+  <div class="table-wrap flat"><table class="plain">
+    <thead><tr><th>You have</th><th>What it brings back</th></tr></thead>
+    <tbody>
+      <tr><td>A backup and the recovery key (or this Mac's key)</td><td>Everything, as it was when the backup was made, on this Mac or another one.</td></tr>
+      <tr><td>The recovery key alone</td><td>A binder that's still on the Mac but whose key was lost (a new Keychain, a reinstalled macOS). Not a binder that's gone: for that you need a backup.</td></tr>
+      <tr><td>A backup alone, no key</td><td>Nothing. Nobody can open it, not even TaxBinder.</td></tr>
+      <tr><td>Undo, in Changes</td><td>A change made by mistake. Not a lost binder or Mac.</td></tr>
+    </tbody>
+  </table></div>
+  <p>A backup never holds what you added after it was made, website sign-ins, files in Downloads, or the demo. Back up again after new documents arrive.</p>
+  <p class="links">{% if not remote %}<a href="/backup">Keep it safe: back up now</a> · {% endif %}Restore from a backup is on TaxBinder's first screen, on a Mac with no binder yet. When a binder's key is missing, TaxBinder asks for the recovery key itself.</p>
+</section>
+
+<section class="card stack" id="new-mac">
+  <h2>Moving to a new Mac</h2>
+  <ol>
+    <li>On the old Mac, open <b>Keep it safe</b> (or <b>Last backup</b>, in the bar at the top) and choose <b>Back up now</b>.</li>
+    <li>Have your recovery key at hand. Lost it? On the old Mac, Keep it safe can show this Mac's key instead: it opens the backup just the same.</li>
+    <li>Copy the backup file (it ends in .tbak) to the new Mac: by AirDrop, iCloud Drive or a USB drive. It's encrypted, so that's safe.</li>
+    <li>On the new Mac, install TaxBinder and open it. Choose <b>Restore from a backup</b>, pick the file and type the key.</li>
+    <li>Sign in again to the institution websites you use from TaxBinder.</li>
+  </ol>
+  <p class="muted small-text">When everything is there on the new Mac, you can remove TaxBinder from the old one (below).</p>
+</section>
+
+<section class="card stack" id="uninstall">
+  <h2>Uninstalling: what stays behind</h2>
+  <p>Moving TaxBinder to the Trash removes the app only. Your data stays, so that installing it again finds it as it was:</p>
+  <ul>
+    <li>Your binders, the demo and a few small notes, in {% if remote %}TaxBinder's folder on the Mac{% else %}<code>{{ where.folder }}</code>{% endif %}.</li>
+    <li>The key, in the Keychain under “{{ where.keychain }}”.</li>
+    <li>Website sign-ins{% if not remote %}, in {% for w in where.web %}<code>{{ w }}</code>{{ ' and ' if not loop.last }}{% endfor %}{% endif %}.</li>
+    <li>Backups and other files you saved, in Downloads or wherever you put them.</li>
+  </ul>
+  <p>To remove everything: first make a backup and keep it with your recovery key, in case you need it later. Then delete those folders in the Finder (Go › Go to Folder…), and delete the “{{ where.keychain }}” entries in Keychain Access. Deleting the binder's folder and its key can't be undone; only a backup and the recovery key bring it back.</p>
+</section>
+
+{% if not remote %}<section class="card stack" id="report">
+  <h2>Report a problem</h2>
+  <p>If something goes wrong, copy the diagnostic info below into your email about it. It says which versions you have, how many documents and filers your binder holds, how often you corrected what TaxBinder read, and the recent warnings and errors.</p>
+  <p class="muted small-text">It holds no names, amounts, account numbers or file names. Read it before you send it: what you see is exactly what's copied.</p>
+  <div class="row"><button type="button" id="diag-show" class="secondary">Show diagnostic info</button><button type="button" id="diag-copy" hidden>Copy diagnostic info</button></div>
+  <pre id="diag-text" class="diag" hidden></pre>
+</section>
+
+{% endif %}<section class="card" id="about">
+  <h2>About</h2>
+  <p>TaxBinder {{ app_version }}. Copyright 2026 Shahid Ahmed.</p>
+  <p>TaxBinder is free software: you can redistribute it and/or change it under the terms of the GNU Affero General Public License, version 3 or (at your option) any later version. It comes with no warranty.</p>
+  {% if licences %}<p>TaxBinder includes {{ licences }} other free software libraries, each under its own licence. <a href="/help/licences">See them and their licences</a>.</p>
+  {% else %}<p class="muted small-text">TaxBinder includes other free software libraries, each under its own licence. Their list is added when TaxBinder is built, and this copy was built without it.</p>{% endif %}
+</section>
+{% endblock %}

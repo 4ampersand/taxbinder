@@ -1,0 +1,8 @@
+# §5.1 (lineage example)
+id: tidemark
+name: TideMark from Brackley Wealth
+aliases: ["TideMark Securities LLC", "TideMark from Brackley Wealth", "Brackley Wealth Legacy Platform (TideMark accounts)"]
+lineage:
+  - { relation: acquired_by, institution: brackley-wealth, effective: 2020-10-02 }
+portal:
+  url: https://us.tidemark.example

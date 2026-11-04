@@ -1,0 +1,14 @@
+# Synthetic, from the §2 federal estimate mismatch
+id: R-PAY-01:2025:federal
+rule: R-PAY-01
+rule_version: "1"
+params_hash: sha256:0000
+severity: error
+classification: possible_inconsistency
+subjects: ["2025", 2025/payments/fed.2025-04-18, 2025/payments/fed.2025-06-13,
+           2025/payments/fed.2025-09-12, 2025/payments/fed.2026-01-14]
+message: "federal payments total $36,000.00 (4 payments) but fixture:summary says $32,000.00"
+suggested_action: Find the missing or extra payment, or correct the summary
+first_seen: 2026-09-28T13:00:00-07:00
+last_seen: 2026-09-28T13:00:00-07:00
+status: open

@@ -1,0 +1,40 @@
+{% extends "page.html" %}
+{% block title %}Files for your preparer · {{ year }}{% endblock %}
+{% block heading %}Files for your preparer{% endblock %}
+{% block content %}
+{# One .zip for the year, made any time; out of date once documents arrive after
+   it. TaxBinder never sends it, and never marks anything sent. #}
+<section class="card stack">
+  <div class="row spread">
+    <h2>Your {{ year }} files</h2>
+    <span class="pill {{ 'ok' if a.ready else 'warn' }}">{{ 'Ready' if a.ready else 'Not yet' }}</span>
+  </div>
+  <p class="muted small-text">{{ a.why }}{% if not a.ready %} You can make the .zip now anyway, and again when more arrives.{% endif %}</p>
+  {% if made %}
+  {% if made.new %}<p class="warn" id="pkg-stale"><b>Out of date:</b> {{ made.new }} document{{ 's' if made.new != 1 }} arrived since you made it on {{ made.at.astimezone().date() }}. Make it again to include {{ 'them' if made.new != 1 else 'it' }}.</p>
+  {% else %}<p class="ok"><b>Made {{ made.at.astimezone().date() }}</b> <span class="muted">with {{ made.documents }} document{{ 's' if made.documents != 1 }}; nothing new since.</span></p>{% endif %}
+  {% endif %}
+  {% if remote %}
+  <p class="muted">Make the .zip at your Mac: it's saved into the Mac's Downloads folder.</p>
+  {% else %}
+  <div class="row"><button type="button" id="pkg-make" data-year="{{ year }}" class="{{ '' if a.ready or (made and made.new) else 'secondary' }}">{{ 'Make it again' if made else 'Make the .zip' }}</button><span class="muted small-text">Saved into {{ folder }}.</span></div>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>What's in it</h2>
+  <ul>
+    <li>A summary for your preparer: who's filing, what's here, what's still to come, and what needs a look.</li>
+    <li>Your {{ year }} documents, sorted into folders by type (W-2s, 1099s, K-1s, …).</li>
+    <li>Your estimated tax payments and your donations, as lists.</li>
+    <li>Account numbers show only their last four digits, in the summary and the file names.</li>
+  </ul>
+</section>
+
+<section class="card">
+  <p><b>The .zip isn't locked.</b> Unlike your binder and its backups, it isn't encrypted: anyone who has the file can open your documents. TaxBinder never sends it anywhere. Give it to your preparer through their secure portal, then delete it from Downloads.</p>
+</section>
+
+{% if not a.ready %}<p class="links"><a href="/?year={{ year }}">See what's still to come for {{ year }}</a></p>{% endif %}
+<p id="msg" role="status"></p>
+{% endblock %}
