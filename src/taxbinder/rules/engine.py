@@ -100,7 +100,9 @@ class Ctx:
     def filing_deadline(self) -> date:
         if "filing" in self.year_config.deadlines:
             return self.year_config.deadlines["filing"]
-        key = "extended_deadline" if self.year_config.extension_filed else "deadline"
+        from taxbinder.returns import extended
+
+        key = "extended_deadline" if extended(self.year_config, self.documents) else "deadline"
         return self.param("R-EXP-01", key)
 
 
@@ -207,6 +209,7 @@ def load_catalog() -> dict[str, Rule]:
         expectations,
         foreign,
         payments,
+        returns,
         sources,
     )
 

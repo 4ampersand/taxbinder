@@ -8,6 +8,7 @@ from typing import Any
 import pytest
 
 from taxbinder.models import CLAIM_ADAPTER, Document, Expectation, Institution, Source, YearConfig
+from taxbinder.models.year import TrackedReturn
 from taxbinder.rules.engine import RULES, Ctx, load_catalog, run
 from taxbinder.rules.params import load_params
 
@@ -117,6 +118,7 @@ def test_catalog_complete() -> None:
         + [f"R-CON-0{i}" for i in range(1, 4)]
         + ["R-FOR-01"]
         + ["R-BIL-01", "R-BIL-02"]
+        + ["R-RET-01"]
     )
     assert sorted(RULES) == sorted(expected)
 
@@ -446,3 +448,14 @@ def test_findings_carry_params_hash_and_version() -> None:
     [f] = found(ctx(claims=[donation("big", 300)]), "R-DON-01")
     assert f.params_hash == load_params(2025).hash and f.rule_version == "1"
     assert f.classification == "missing_evidence" and f.severity == "error"
+
+
+def test_a_federal_return_not_filed_near_its_deadline() -> None:
+    near = date(2026, 10, 1)  # two weeks before the extended deadline
+    [f] = found(ctx(today=near), "R-RET-01")
+    assert f.id == "R-RET-01:2025:federal" and "14 days to the 2026-10-15 deadline" in f.message
+    assert not found(ctx(today=date(2026, 6, 1)), "R-RET-01")  # not near yet
+    filed = YearConfig(
+        year=2025, extension_filed=True, returns=[TrackedReturn(status="filed")]
+    )
+    assert not found(ctx(today=near, year_config=filed), "R-RET-01")

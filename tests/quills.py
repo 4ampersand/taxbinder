@@ -362,6 +362,10 @@ def records() -> list[Any]:
             year=YEAR,
             extension_filed=True,
             resident_states=["CA"],
+            returns=[
+                {"jurisdiction": "federal", "status": "with_preparer", "extended": True},
+                {"jurisdiction": "CA", "status": "with_preparer", "extended": True},
+            ],
             summaries=[
                 {"subject": f"{YEAR}/irs.interest-income-from-irs.1099-int", "value": 412.37,
                  "source": "fixture:summary"},

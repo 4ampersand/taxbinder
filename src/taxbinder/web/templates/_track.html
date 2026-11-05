@@ -1,0 +1,21 @@
+{# Where one of the year's returns is: filed or not, extended, what it came to. #}
+<div class="scrim" id="track" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="rt-title">
+    <header><h2 id="rt-title"><span id="rt-name"></span> return, <span id="rt-year"></span></h2><button class="link" type="button" data-close="track" aria-label="Close">✕</button></header>
+    <div class="form">
+      <div class="field"><label for="rt-status">Where it is</label><select id="rt-status">
+        {% for v, t in stages.items() %}<option value="{{ v }}">{{ t }}</option>{% endfor %}
+      </select></div>
+      <div class="field"><label for="rt-filed">Filed on</label><input type="date" id="rt-filed"></div>
+      <div class="field"><label><input type="checkbox" id="rt-extended"> An extension was filed</label></div>
+      <div class="field"><label for="rt-came">What it came to</label><select id="rt-came">
+        <option value="">Not known yet</option><option value="refund">A refund</option><option value="owed">An amount owed</option>
+      </select></div>
+      <div class="field" id="rt-amount-f"><label for="rt-amount">Amount</label><input id="rt-amount" inputmode="decimal" placeholder="e.g. 1,200"></div>
+      <div class="field" id="rt-arrived-f"><label for="rt-arrived">Refund arrived on</label><input type="date" id="rt-arrived"></div>
+      <p class="tip" id="rt-owed-tip">An amount owed shows as paid once its balance-due payment is on <a href="/payments">Payments</a>.</p>
+      <p class="small" id="rt-say" role="status"></p>
+    </div>
+    <footer><button class="secondary" type="button" data-close="track">Cancel</button><button id="rt-go" type="button">Save</button></footer>
+  </div>
+</div>

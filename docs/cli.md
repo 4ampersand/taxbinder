@@ -1062,14 +1062,15 @@ $ taxbinder return [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `list`: The year&#x27;s returns and return papers.
+* `list`: The year&#x27;s returns (where each is) and its...
+* `track`: Say where one of the year&#x27;s returns is;...
 * `status`: Say whether a return is a draft or the...
 * `show`: What a 1040 says: household, and what it...
 * `add-listed`: Checklist rows for what the return names...
 
 ### `taxbinder return list`
 
-The year&#x27;s returns and return papers.
+The year&#x27;s returns (where each is) and its return documents and papers.
 
 **Usage**:
 
@@ -1080,6 +1081,32 @@ $ taxbinder return list [OPTIONS]
 **Options**:
 
 * `--year <int>`: Tax year  [default: (last year)]
+* `--help`: Show this message and exit.
+
+### `taxbinder return track`
+
+Say where one of the year&#x27;s returns is; only the options given change.
+
+**Usage**:
+
+```console
+$ taxbinder return track [OPTIONS] {jurisdiction}
+```
+
+**Arguments**:
+
+* `jurisdiction`: federal, or a state: CA, NY, …  [required]
+
+**Options**:
+
+* `--year <int>`: Tax year  [default: (last year)]
+* `--status <str>`: not_started | with_preparer | filed | accepted | not_needed
+* `--filed-on <str>`: The day it was filed: 2026-03-02
+* `--extended / --no-extended`: An extension was filed
+* `--refund <str>`: What comes back, e.g. 1200
+* `--owed <str>`: What is still to pay
+* `--refund-arrived-on <str>`: The day the refund came
+* `--actor <str>`: Recorded as the author of the change  [default: (your login name)]
 * `--help`: Show this message and exit.
 
 ### `taxbinder return status`

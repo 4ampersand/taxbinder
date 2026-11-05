@@ -102,7 +102,10 @@
     }
   }));
   document.addEventListener("scroll", (e) => { if (!e.target.closest || !e.target.closest(".menu")) closeMenus(); }, true);
-  document.querySelectorAll(".acts .menu").forEach((m) => m.addEventListener("click", (e) => e.stopPropagation()));
+  // a click inside a menu stays in it, but View goes on to the viewer (app.js), closing the menu
+  document.querySelectorAll(".acts .menu").forEach((m) => m.addEventListener("click", (e) => {
+    if (!e.target.closest("[data-view]")) e.stopPropagation();
+  }));
   document.addEventListener("click", closeMenus);
   // A dialog keeps the keyboard inside it (Tab and Shift-Tab go round), and on closing puts
   // focus back on what opened it.

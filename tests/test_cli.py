@@ -258,3 +258,16 @@ def test_an_institution_nothing_uses_can_be_removed(tmp_path: Path) -> None:
     assert "heronsgate-holdngs" not in cli("institution", "list")
     cli("undo", cli("history").split()[0])  # one change: undone, it's back
     assert "heronsgate-holdngs" in cli("institution", "list")
+
+
+def test_where_a_return_is(tmp_path: Path) -> None:
+    seed(tmp_path)
+    out = cli("return", "list", "--year", "2025")
+    assert "federal  With my preparer  extended" in out and "CA       With my preparer" in out
+    cli("return", "track", "ca", "--year", "2025", "--status", "filed", "--owed", "$300")
+    cli("return", "track", "federal", "--year", "2025", "--status", "accepted", "--refund", "1200")
+    out = cli("return", "list", "--year", "2025")
+    assert "CA       Filed  extended  owed 300" in out and "federal  Accepted  extended  refund 1200" in out
+    assert "not both" not in cli("return", "track", "ca", "--year", "2025", "--refund", "5")
+    assert "CA       Filed  extended  refund 5" in cli("return", "list", "--year", "2025")  # owed cleared
+    assert "not started" in cli("return", "track", "ca", "--year", "2025", "--status", "x", ok=False)

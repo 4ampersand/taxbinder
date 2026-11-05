@@ -33,6 +33,21 @@ class Summary(Record):
     source: str
 
 
+class TrackedReturn(Record):
+    """Where one of the year's returns is, as a person says: filed or not, and what it came to.
+    The filed copy itself is the year's return document marked Filed copy."""
+
+    jurisdiction: str = Field("federal", pattern=r"^(federal|[A-Z]{2})$")
+    status: Literal["not_started", "with_preparer", "filed", "accepted", "not_needed"] = (
+        "not_started"
+    )
+    filed_on: date | None = None
+    extended: bool = Field(False, description="An extension was filed (federal: Form 4868)")
+    refund: Money | None = Field(None, description="What the return says comes back")
+    owed: Money | None = Field(None, description="What the return says is still to pay")
+    refund_arrived_on: date | None = None
+
+
 class YearConfig(Record):
     year: int
     filing_status: (
@@ -55,6 +70,7 @@ class YearConfig(Record):
     summaries: list[Summary] = []
     notes: str = ""
     package: PackageMade | None = None
+    returns: list[TrackedReturn] = Field([], description="The year's returns, one per jurisdiction")
     asked: dict[str, Literal["no", "unsure"]] = Field(
         {}, description="Results' questions answered No or Not sure, ask my preparer"
     )

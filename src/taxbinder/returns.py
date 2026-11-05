@@ -11,9 +11,13 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from datetime import date
+from decimal import Decimal
+from typing import Any
 
-from taxbinder.models import Document
+from taxbinder.models import Document, YearConfig
 from taxbinder.models.document import Listed, ReturnInfo
+from taxbinder.models.year import TrackedReturn
 from taxbinder.store import RecordNotFound, RecordStore
 
 RETURN_TYPES = {"tax_return", "return_paper"}
@@ -122,7 +126,9 @@ def recognise(text: str, latest: int) -> Recognised | None:
     year = _year(head, latest)
     for form, title in PAPERS:
         if m := re.search(title, lowered):
-            printed = FORM.search(head)
+            # its number from its own title's line: the page names other forms ("Form 540, line 17")
+            line = head[head.rfind("\n", 0, m.start()) + 1 : (head + "\n").find("\n", m.end())]
+            printed = FORM.search(line)
             state = None if federal else _state(head)
             info = ReturnInfo(
                 form=printed.group(1).upper() if printed and state else form,
@@ -326,7 +332,8 @@ def set_details(
     amended: bool | None = None,
     form: str | None = None,
 ) -> None:
-    """A person says whether a return is a draft or the filed copy (or amended, or its form)."""
+    """A person says whether a return is a draft or the filed copy (or amended, or its form).
+    A return's filed copy marks the year's return Filed too, unless it's further along."""
     document, rev = store.get("document", doc)
     if document.tax_return is None:
         raise ValueError("that document isn't a tax return")
@@ -345,3 +352,155 @@ def set_details(
     what = ", ".join(f"{k} {v}" for k, v in update.items())
     with store.operation(actor, f"return {doc}: {what}"):
         store.put(document.model_copy(update={"tax_return": new}), rev)
+        c = document.classification
+        if new.status == "filed" and not new.amended and c and c.doc_type == "tax_return":
+            _mark_filed(store, c.tax_year, new.jurisdiction)
+
+
+def _mark_filed(store: RecordStore, year: int | None, jurisdiction: str) -> None:
+    """The year's return for the jurisdiction is Filed, if it was not started or with the
+    preparer; part of the caller's operation."""
+    if year is None or (jurisdiction != "federal" and jurisdiction not in STATES):
+        return
+    config, rev = _config(store, year)
+    old = next((t for t in config.returns if t.jurisdiction == jurisdiction), None)
+    if old is not None and old.status not in ("not_started", "with_preparer"):
+        return
+    new = (old or TrackedReturn(jurisdiction=jurisdiction)).model_copy(update={"status": "filed"})
+    kept = [t for t in config.returns if t.jurisdiction != jurisdiction]
+    store.put(config.model_copy(update={"returns": [*kept, new]}), rev)
+
+
+STAGES = {
+    "not_started": "Not started",
+    "with_preparer": "With my preparer",
+    "filed": "Filed",
+    "accepted": "Accepted",
+    "not_needed": "Not needed",
+}
+
+
+def extended(config: YearConfig, documents: list[Document]) -> bool:
+    """The federal return is extended: the year says so, or a Form 4868 for it is here."""
+    return config.extension_filed or any(
+        d.tax_return.form == "4868"
+        for d in documents
+        if d.tax_return and d.classification and d.classification.tax_year == config.year
+    )
+
+
+@dataclass
+class Tracked:
+    """One of the year's returns: what a person said about it, and what the vault shows."""
+
+    t: TrackedReturn
+    name: str  # "Federal", "California"
+    form: str | None  # as printed on its document, else the binder's own (federal)
+    copy: Document | None  # the year's return document for it marked Filed copy
+    deadline: date | None  # federal only: a state's date isn't in TaxBinder
+    paid: Decimal  # balance-due payments for it on Payments
+
+    @property
+    def settled(self) -> bool:
+        """Nothing left to wait for: the refund arrived, or what was owed is paid."""
+        if self.t.refund:
+            return self.t.refund_arrived_on is not None
+        return not self.t.owed or self.paid >= self.t.owed
+
+
+def _config(store: RecordStore, year: int) -> tuple[YearConfig, str | None]:
+    try:
+        return store.get("year", str(year))
+    except RecordNotFound:
+        return YearConfig(year=year), None
+
+
+def tracked(store: RecordStore, year: int) -> list[Tracked]:
+    """The year's returns: federal, each resident state with an income tax, and any other with
+    a return document or a word from a person; federal first."""
+    from taxbinder.entities import entity_info
+    from taxbinder.report import _deadline
+    from taxbinder.states import table
+
+    config, _ = _config(store, year)
+    states = table()
+    documents = store.list("document")
+    docs = [
+        d
+        for d in documents
+        if d.tax_return
+        and d.classification
+        and d.classification.tax_year == year
+        and d.classification.doc_type == "tax_return"
+    ]
+    codes = ["federal"]
+    codes += [s for s in config.resident_states if s in states and states[s].income_tax]
+    codes += [d.tax_return.jurisdiction for d in docs]  # type: ignore[union-attr]
+    codes += [t.jurisdiction for t in config.returns]
+    said = {t.jurisdiction: t for t in config.returns}
+    payments = [
+        c
+        for c in store.list("claim", year)
+        if c.category == "tax_payment" and c.payment.kind == "balance_due" and not c.unpaid
+    ]
+    own = entity_info(store).form
+    out = []
+    for code in dict.fromkeys(codes):
+        mine = [d for d in docs if d.tax_return.jurisdiction == code]  # type: ignore[union-attr]
+        filed = [d for d in mine if d.tax_return.status == "filed"]  # type: ignore[union-attr]
+        printed = (filed or mine)[0].tax_return.form if mine else None  # type: ignore[union-attr]
+        out.append(
+            Tracked(
+                t=(
+                    said.get(code, TrackedReturn(jurisdiction=code)).model_copy(
+                        update={"extended": extended(config, documents)}
+                    )
+                    if code == "federal"
+                    else said.get(code, TrackedReturn(jurisdiction=code))
+                ),
+                name="Federal" if code == "federal" else STATES.get(code, code),
+                form=printed or (own if code == "federal" else None),
+                copy=filed[0] if filed else None,
+                deadline=(
+                    _deadline(config, year, own, extended(config, documents))
+                    if code == "federal"
+                    else None
+                ),
+                paid=sum(
+                    (c.amount for c in payments if c.jurisdiction.upper() == code.upper()),
+                    Decimal(0),
+                ),
+            )
+        )
+    return out
+
+
+def track(store: RecordStore, year: int, jurisdiction: str, actor: str, **changes: Any) -> None:
+    """A person says where one of the year's returns is (any of TrackedReturn's fields); one
+    undoable change. A refund and an amount owed don't go together; the federal return's
+    extension is the year's too."""
+    if jurisdiction != "federal" and jurisdiction not in STATES:
+        raise ValueError(f"not a return TaxBinder knows: {jurisdiction}")
+    if changes.get("status", "not_started") not in STAGES:
+        raise ValueError("a return is not started, with my preparer, filed, accepted or not needed")
+    config, rev = _config(store, year)
+    old = next(
+        (t for t in config.returns if t.jurisdiction == jurisdiction),
+        TrackedReturn(jurisdiction=jurisdiction),
+    )
+    if jurisdiction == "federal":  # the year's extension is the federal return's
+        old = old.model_copy(update={"extended": config.extension_filed})
+    new = TrackedReturn.model_validate({**old.model_dump(), **changes})
+    if new.refund and new.owed:
+        raise ValueError("a return has a refund or an amount owed, not both")
+    if any(m is not None and m <= 0 for m in (new.refund, new.owed)):
+        raise ValueError("the amount must be more than zero")
+    if new == old:
+        return
+    kept = [t for t in config.returns if t.jurisdiction != jurisdiction]
+    update: dict[str, Any] = {"returns": [*kept, new]}
+    if jurisdiction == "federal":
+        update["extension_filed"] = new.extended
+    what = ", ".join(f"{k} {v}" for k, v in changes.items() if getattr(old, k) != getattr(new, k))
+    with store.operation(actor, f"return {year} {jurisdiction}: {what}"):
+        store.put(config.model_copy(update=update), rev)

@@ -94,6 +94,98 @@
       ],
       "title": "Summary",
       "type": "object"
+    },
+    "TrackedReturn": {
+      "additionalProperties": false,
+      "description": "Where one of the year's returns is, as a person says: filed or not, and what it came to.\nThe filed copy itself is the year's return document marked Filed copy.",
+      "properties": {
+        "extended": {
+          "default": false,
+          "description": "An extension was filed (federal: Form 4868)",
+          "title": "Extended",
+          "type": "boolean"
+        },
+        "filed_on": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Filed On"
+        },
+        "jurisdiction": {
+          "default": "federal",
+          "pattern": "^(federal|[A-Z]{2})$",
+          "title": "Jurisdiction",
+          "type": "string"
+        },
+        "owed": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "What the return says is still to pay",
+          "title": "Owed"
+        },
+        "refund": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "What the return says comes back",
+          "title": "Refund"
+        },
+        "refund_arrived_on": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Refund Arrived On"
+        },
+        "status": {
+          "default": "not_started",
+          "enum": [
+            "not_started",
+            "with_preparer",
+            "filed",
+            "accepted",
+            "not_needed"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "title": "TrackedReturn",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -191,6 +283,15 @@
         "type": "string"
       },
       "title": "Resident States",
+      "type": "array"
+    },
+    "returns": {
+      "default": [],
+      "description": "The year's returns, one per jurisdiction",
+      "items": {
+        "$ref": "#/$defs/TrackedReturn"
+      },
+      "title": "Returns",
       "type": "array"
     },
     "summaries": {

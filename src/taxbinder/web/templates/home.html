@@ -91,6 +91,14 @@
       <button type="button" class="btn small ghost pp-add" data-year="{{ c.year }}">＋ Add papers for {{ c.year }}</button>
       <a class="small" href="/foreign?year={{ c.year }}">Accounts abroad (FBAR) ›</a>
     </section>
+    <section class="panel stages returns" data-side="{{ c.year }}"{% if not c.front %} hidden{% endif %} aria-labelledby="rt-h-{{ c.year }}">
+      <h3 id="rt-h-{{ c.year }}">Returns</h3>
+      <ul class="open">
+        {% for x in c.returns %}{% set r = x.r %}<li{% for k, v in x.data.items() %} data-{{ k }}="{{ v }}"{% endfor %} data-year="{{ c.year }}" data-name="{{ r.name }}"{% if r.t.status == 'not_needed' %} class="muted"{% endif %}>
+          <b>{{ r.name }}</b>{% if x.form %} · {{ 'Form ' ~ x.form if x.form[:1].isdigit() else x.form }}{% endif %}<br><span class="{{ 'muted ' if r.t.status != 'not_needed' }}small">{{ x.said }}</span>
+          <br><button type="button" class="link rt-edit" aria-label="Change the {{ r.name }} return">Change</button>{% if r.copy %} · <button type="button" class="link" data-view="{{ r.copy.id }}">Filed copy</button>{% endif %}</li>{% endfor %}
+      </ul>
+    </section>
     <section class="panel stages" data-side="{{ c.year }}"{% if not c.front %} hidden{% endif %} aria-label="{{ c.year }}: check">
       {% if s.deadline %}<p class="muted small">{{ 'Extended deadline' if g.extended else 'Filing deadline' }} {{ s.deadline.strftime('%b %-d, %Y') }}{% if s.days_left is not none %} · {% if s.days_left >= 0 %}{{ s.days_left }} day{{ 's' if s.days_left != 1 }} left{% else %}passed{% endif %}{% endif %}</p>{% endif %}
       {% if s.checked and not s.params_reviewed %}<p class="muted small">Rule parameters for {{ c.year }} aren’t reviewed yet (deadlines, due dates, thresholds).</p>{% endif %}
@@ -117,4 +125,5 @@
 <input type="file" id="rowfile" hidden aria-label="A file for this row" accept=".pdf,.png,.jpg,.jpeg,.heic,.html,.htm">
 {% include "_expect.html" %}
 {% include "_papers.html" %}
+{% include "_track.html" %}
 {% endblock %}

@@ -31,6 +31,7 @@ from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, date, datetime
+from decimal import Decimal, InvalidOperation
 from importlib import resources
 from pathlib import Path
 from typing import Any
@@ -2213,6 +2214,33 @@ def create_app(state: AppState) -> FastAPI:
         def work(store: RecordStore) -> dict:
             year = int(body.get("year") or 0)
             return {"added": returns.add_listed(store, str(body.get("id", "")), year, actor)}
+
+        return act(work)
+
+    @app.post("/api/returns/track")
+    async def api_return_track(request: Request) -> JSONResponse:
+        """Where one of the year's returns is: filed or not, extended, what it came to."""
+        actor = request.state.actor
+        body = await request.json()
+
+        def day(key: str) -> date | None:
+            return date.fromisoformat(str(body[key])) if body.get(key) else None
+
+        def work(store: RecordStore) -> dict:
+            typed = str(body.get("amount") or "").replace(",", "").lstrip("$").strip()
+            try:
+                amount = Decimal(typed) if typed else None
+            except InvalidOperation:
+                raise ValueError("the amount isn't a number") from None
+            kind = body.get("came_to")  # "refund" | "owed" | none
+            returns.track(
+                store, int(body.get("year") or 0), str(body.get("jurisdiction", "")), actor,
+                status=str(body.get("status") or "not_started"), filed_on=day("filed_on"),
+                extended=bool(body.get("extended")), refund_arrived_on=day("refund_arrived_on"),
+                refund=amount if kind == "refund" else None,
+                owed=amount if kind == "owed" else None,
+            )  # fmt: skip
+            return {}
 
         return act(work)
 

@@ -7,6 +7,7 @@ every change goes through the app's API (`act()`).
 from __future__ import annotations
 
 from collections.abc import Callable
+from datetime import date
 from decimal import Decimal
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -16,7 +17,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from taxbinder import bench, binder, donations, matrix, preparer
+from taxbinder import bench, binder, donations, matrix, preparer, returns
 from taxbinder.notices import Notice, notices
 
 if TYPE_CHECKING:
@@ -52,6 +53,71 @@ def money(amount: Decimal | None) -> str:
         return ""
     text = f"${abs(amount):,.0f}"
     return f"({text})" if amount < 0 else text
+
+
+def _day(d: date) -> str:
+    return d.strftime("%b %-d, %Y")
+
+
+def return_lines(store: RecordStore, year: int, today: date) -> list[dict[str, Any]]:
+    """Each of the year's returns in a line for its cover: where it is, when it's due, what it
+    came to; with what its dialog starts from."""
+    out = []
+    for r in returns.tracked(store, year):
+        t = r.t
+        said = [returns.STAGES[t.status]]
+        if t.status == "filed" and t.filed_on:
+            said = [f"Filed {_day(t.filed_on)}"]
+        elif t.status == "accepted" and t.filed_on:
+            said = [f"Accepted · filed {_day(t.filed_on)}"]
+        elif t.status in ("not_started", "with_preparer") and r.deadline:
+            left = (r.deadline - today).days
+            when = f"{left} day{'s' if left != 1 else ''} left" if left >= 0 else "passed"
+            said.append(f"{'extended to' if t.extended else 'due'} {_day(r.deadline)} ({when})")
+        elif t.extended and t.status != "not_needed":
+            said.append("extended")
+        done = t.status in ("filed", "accepted")
+        if t.refund:
+            arrived = t.refund_arrived_on
+            tail = f"arrived {_day(arrived)}" if arrived else "not arrived yet" if done else ""
+            said.append(f"refund {money(t.refund)}" + (f", {tail}" if tail else ""))
+        elif t.owed:
+            tail = "paid" if r.settled else f"{money(r.paid)} paid" if r.paid else "not paid yet"
+            said.append(f"owed {money(t.owed)}, {tail}")
+        out.append(
+            {"r": r, "said": " · ".join(said), "form": r.form,
+             "data": {"j": t.jurisdiction, "status": t.status, "filed": str(t.filed_on or ""),
+                      "extended": "1" if t.extended else "", "refund": str(t.refund or ""),
+                      "owed": str(t.owed or ""), "arrived": str(t.refund_arrived_on or "")}}
+        )  # fmt: skip
+    return out
+
+
+def returns_by_year(store: RecordStore, years: list[int]) -> list[dict[str, Any]]:
+    """Across the years' Returns table: each return a row, each year what was said about it
+    (where it is, what it came to) and its filed copy; None where nothing is known."""
+    rows: dict[str, dict[str, Any]] = {}
+    for y in years:
+        for r in returns.tracked(store, y):
+            said = r.t.jurisdiction in {t.jurisdiction for t in _year(store, y).returns}
+            row = rows.setdefault(r.t.jurisdiction, {"name": r.name, "years": {}})
+            if not said and r.copy is None:
+                continue
+            came = f"refund {money(r.t.refund)}" if r.t.refund else ""
+            came = came or (f"owed {money(r.t.owed)}" if r.t.owed else "")
+            status = returns.STAGES[r.t.status] if said else "Filed copy"
+            row["years"][y] = {"status": status, "came": came, "doc": r.copy}
+    return [r for r in rows.values() if r["years"]]
+
+
+def _year(store: RecordStore, year: int) -> Any:  # noqa: ANN401
+    from taxbinder.models import YearConfig
+    from taxbinder.store import RecordNotFound
+
+    try:
+        return store.get("year", str(year))[0]
+    except RecordNotFound:
+        return YearConfig(year=year)
 
 
 def notice_year(n: Notice) -> int | None:
@@ -150,6 +216,7 @@ def mount(app: FastAPI, state: AppState, page: Callable[..., HTMLResponse],
             away = {y: [r for r in checklist_rows(store, y) if r.status[0] == "na"]
                     for y in c.years}  # not expected this year: no square shows them
             papers = {y: preparer.papers(store, y) for y in c.years}  # for my preparer
+            filed = {y: return_lines(store, y, state.today()) for y in c.years}  # the returns
             for y in c.years:  # last year's papers, as a reminder (never "missing")
                 if (due := preparer.reminder(store, y)) is not None:
                     noticed.append(Notice(due[0], due[1], [("Not this year", "dismiss")],
@@ -162,8 +229,10 @@ def mount(app: FastAPI, state: AppState, page: Callable[..., HTMLResponse],
             card["glance"] = glance[card["year"]]
             card["away"] = away[card["year"]]
             card["papers"] = papers[card["year"]]
+            card["returns"] = filed[card["year"]]
         return page(request, "home.html", cards=out, front_year=front,
-                    asked=asked, waiting=waiting, form=form, **starts)  # fmt: skip
+                    asked=asked, waiting=waiting, form=form, stages=returns.STAGES,
+                    **starts)  # fmt: skip
 
     @app.get("/parts/rows", response_class=HTMLResponse)
     def deck_rows(request: Request, ids: str = "") -> HTMLResponse:
@@ -217,13 +286,14 @@ def mount(app: FastAPI, state: AppState, page: Callable[..., HTMLResponse],
             picks = matrix.choices(store)
             short = len(matrix.short_of_key_boxes(store))  # W-2 rows from before tax withheld
             given, given_total = donations.by_year(store)
+            filed = returns_by_year(store, cols)
         rows.sort(key=lambda r: (r.sender.casefold(), r.label, r.account.casefold()))
         shown = {r.key for r in rows}
         choices = [c for c in picks if f"{c[0]}|{c[1]}" not in shown]  # rows that can be added
         cols = sorted(cols, reverse=True)  # newest on the left
         return page(request, "years.html", cols=cols, rows=rows,
                     choices=choices, short=short, given=given, given_total=given_total,
-                    whole=matrix.whole)  # fmt: skip
+                    filed=filed, whole=matrix.whole)  # fmt: skip
 
     @app.get("/add", response_class=HTMLResponse)
     def deck_add(request: Request, year: int | None = None) -> HTMLResponse:

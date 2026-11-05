@@ -40,6 +40,14 @@ list.
   ready for your preparer, and **Noticed for you**: things TaxBinder worked out from your
   earlier years (a sender that came every year but not this one, a new sender, a big change).
   Each is answered with one click.
+- **Returns**, beside the deck: the year's federal return and one for each state you live in
+  that has an income tax. Click **Change** to say where each is (not started, with your
+  preparer, filed, accepted, or not needed), whether an extension was filed, and what it came
+  to: a refund (and when it arrived) or an amount owed (paid once its balance-due payment is on
+  Payments). The federal return shows its deadline, the extended one after an extension, and
+  Check reminds you as it gets close. TaxBinder doesn't know the states' deadlines yet.
+  Marking a return's PDF **Filed copy** (under Documents) marks that return Filed too.
+  Across the years has a table of every year's returns.
 - **Start next year** and **An earlier year** sit above the deck. A new year carries over the
   rows of the one it starts from; statuses start fresh.
 

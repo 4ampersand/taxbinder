@@ -882,19 +882,61 @@ app.add_typer(return_app, name="return")
 
 @return_app.command("list")
 def return_list(year: Year = TAX_YEAR) -> None:
-    """The year's returns and return papers."""
-    from taxbinder.returns import returns_for_year
+    """The year's returns (where each is) and its return documents and papers."""
+    from taxbinder.returns import STAGES, returns_for_year, tracked
 
     with open_store() as store:
         found = returns_for_year(store, year)
+        where = tracked(store, year)
+    for t in where:
+        came = f"  refund {t.t.refund}" if t.t.refund else f"  owed {t.t.owed}" if t.t.owed else ""
+        extended = "  extended" if t.t.extended else ""
+        typer.echo(f"{t.t.jurisdiction:8} {STAGES[t.t.status]}{extended}{came}")
     if not found:
-        typer.echo(f"no returns for {year}")
+        typer.echo(f"no return documents for {year}")
     for r in found:
         i = r.info
         flags = " amended" if i.amended else ""
         typer.echo(f"{r.doc.id}  {i.jurisdiction:8} {i.form:10} {i.status}{flags}")
         for p, pi in r.papers:
             typer.echo(f"  {p.id}  {pi.form}")
+
+
+@return_app.command("track")
+def return_track(
+    jurisdiction: Annotated[str, typer.Argument(help="federal, or a state: CA, NY, …")],
+    year: Year = TAX_YEAR,
+    status: Annotated[
+        str | None,
+        typer.Option(help="not_started | with_preparer | filed | accepted | not_needed"),
+    ] = None,
+    filed_on: Annotated[str | None, typer.Option(help="The day it was filed: 2026-03-02")] = None,
+    extended: Annotated[bool | None, typer.Option(help="An extension was filed")] = None,
+    refund: Annotated[str | None, typer.Option(help="What comes back, e.g. 1200")] = None,
+    owed: Annotated[str | None, typer.Option(help="What is still to pay")] = None,
+    refund_arrived_on: Annotated[str | None, typer.Option(help="The day the refund came")] = None,
+    actor: Actor = ACTOR,
+) -> None:
+    """Say where one of the year's returns is; only the options given change."""
+    from taxbinder.returns import track
+    from taxbinder.years import parse_amount
+
+    given: dict = {}
+    if status:
+        given["status"] = status
+    if filed_on:
+        given["filed_on"] = date.fromisoformat(filed_on)
+    if extended is not None:
+        given["extended"] = extended
+    if refund:  # a refund or an amount owed, never both
+        given |= {"refund": parse_amount(refund), "owed": None}
+    if owed:
+        given |= {"owed": parse_amount(owed), "refund": None}
+    if refund_arrived_on:
+        given["refund_arrived_on"] = date.fromisoformat(refund_arrived_on)
+    code = "federal" if jurisdiction.lower() == "federal" else jurisdiction.upper()
+    with open_store() as store:
+        track(store, year, code, actor, **given)
 
 
 @return_app.command("status")

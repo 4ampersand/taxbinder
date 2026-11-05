@@ -367,6 +367,39 @@
     }));
   }
 
+  // -- Returns: where each of the year's returns is (one undoable change) ---------------------
+  if (dialogs('track')) {
+    let row = null;
+    const came = dialogs('rt-came');
+    const shown = () => {  // the amount fields only once it's known what the return came to
+      dialogs('rt-amount-f').hidden = !came.value;
+      dialogs('rt-arrived-f').hidden = came.value !== 'refund';
+      dialogs('rt-owed-tip').hidden = came.value !== 'owed';
+    };
+    came.addEventListener('change', shown);
+    document.querySelectorAll('.returns .rt-edit').forEach((b) => b.addEventListener('click', () => {
+      row = b.closest('li'); const d = row.dataset;
+      dialogs('rt-name').textContent = d.name; dialogs('rt-year').textContent = d.year;
+      dialogs('rt-status').value = d.status; dialogs('rt-filed').value = d.filed;
+      dialogs('rt-extended').checked = d.extended === '1';
+      came.value = d.refund ? 'refund' : d.owed ? 'owed' : '';
+      dialogs('rt-amount').value = d.refund || d.owed; dialogs('rt-arrived').value = d.arrived;
+      dialogs('rt-say').textContent = ''; shown();
+      openDlg('track');
+    }));
+    dialogs('rt-go').addEventListener('click', async (e) => {
+      const go = e.currentTarget, d = row.dataset;
+      go.disabled = true;
+      const r = await api('/api/returns/track', {
+        year: Number(d.year), jurisdiction: d.j, status: dialogs('rt-status').value,
+        filed_on: dialogs('rt-filed').value, extended: dialogs('rt-extended').checked,
+        came_to: came.value, amount: came.value ? dialogs('rt-amount').value : '',
+        refund_arrived_on: came.value === 'refund' ? dialogs('rt-arrived').value : '' });
+      if (r.ok) location.href = `/?year=${d.year}`;
+      else { dialogs('rt-say').textContent = await errorOf(r); go.disabled = false; }
+    });
+  }
+
   // -- the deck of years ------------------------------------------------------------------------
   const deck = document.getElementById('deck');
   if (!deck) return;

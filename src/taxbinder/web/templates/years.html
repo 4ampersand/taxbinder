@@ -104,4 +104,20 @@
 </section>
 {% if given|selectattr('from_daf')|list %}<p class="muted small">Grants from your donor-advised fund aren’t in the total: the gift counted when the money went into the fund.</p>{% endif %}
 {% endif %}
+{% if filed %}
+<section class="panel flush filed" aria-labelledby="ay-ret-h">
+  <header class="row spread"><h2 id="ay-ret-h">Returns</h2><span class="muted small">Changed under Returns on each year’s cover</span></header>
+  <div class="scroll">
+    <table class="ay" id="ay-returns">
+      <thead><tr><th>Return</th>{% for y in cols %}<th><a href="/?year={{ y }}" aria-label="The {{ y }} cover">{{ y }}</a></th>{% endfor %}</tr></thead>
+      <tbody>
+      {% for f in filed %}<tr>
+        <th scope="row" class="who"><b>{{ f.name }}</b></th>
+        {% for y in cols %}<td>{% if y in f.years %}{% set x = f.years[y] %}{{ x.status }}{% if x.came %}<small class="muted"> · {{ x.came }}</small>{% endif %}{% if x.doc %} <button type="button" class="link small" data-view="{{ x.doc.id }}" aria-label="The filed {{ f.name }} return for {{ y }}">View</button>{% endif %}{% else %}<span class="mark" title="Nothing said about it">·</span>{% endif %}</td>{% endfor %}
+      </tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
 {% endblock %}

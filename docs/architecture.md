@@ -339,7 +339,10 @@ filed, so nothing is filed unseen.
   own title is at the top; a consolidated 1099 that mentions "Form 1099-DIV" inside stays
   consolidated); the tax year from the form's own wording; the issuer and account read by
   their place (§5.6). A tax return is recognised by its printed title, never a form number
-  (`returns.py`), and is no checklist row's document.
+  (`returns.py`), and is no checklist row's document. Where each of the year's returns is
+  (not started, with the preparer, filed, accepted; extended; the refund or amount owed) is
+  what a person says, kept in `year.yaml` (`returns`); its filed copy is the return document
+  marked Filed copy, and an amount owed is paid by the balance-due payments on Payments.
 - **Whose** (`whose.py`): the recipient's name → a person, both, or a trust; unclear → asked on
   Check, never guessed.
 - **Match** (`ingest/match.py`): candidates are the year's rows of the same type (or a
@@ -404,7 +407,9 @@ parameter shows. A year without a file isn't checked, and the app says so.
 
 One module per area in `rules/catalog/`: `expectations` (late, received but not filed,
 superseded after sending), `payments` (totals, installments, timing), `donations` (letters,
-Form 8283 records), `consistency` (the same fact in two places), `sources`, `foreign` (FBAR).
+Form 8283 records), `consistency` (the same fact in two places), `sources`, `foreign` (FBAR),
+`returns` (the federal return not filed near its deadline; the extended one after a Form 4868
+in the binder or an extension said).
 
 ### 8.3 Requirements and evidence
 
@@ -470,7 +475,8 @@ blocks inline `style` attributes, not styles set from a script); the deck itself
 clicks, since in 3D the cards set back sit behind their container.
 
 Beside the card in front: the year's answers (`results.py`), its hand-off to the preparer, the
-papers for the preparer, and "Noticed for you": rules over the binder's own years
+papers for the preparer, its returns (`returns.tracked`; also a table on Across the years), and
+"Noticed for you": rules over the binder's own years
 (`notices.py`), each answered with one undoable click; a note set aside is kept in
 `AppSettings.dismissed_notices`. Across the years (`/years`, `matrix.py`) is the same data as a
 table, one row per source and kind of document, a column per year. Add documents (`/add`) takes

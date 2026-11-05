@@ -174,10 +174,14 @@ def tiles(store: RecordStore, year: int) -> dict[str, Any]:
 
 
 def extension_filed(store: RecordStore, year: int) -> bool:
+    from taxbinder.models import YearConfig
+    from taxbinder.returns import extended
+
     try:
-        return bool(store.get("year", str(year))[0].extension_filed)
+        config = store.get("year", str(year))[0]
     except RecordNotFound:
-        return False
+        config = YearConfig(year=year)
+    return extended(config, store.list("document"))
 
 
 def carry_over_rows(store: RecordStore, rows: list, labels: dict[str, str]) -> list[dict]:

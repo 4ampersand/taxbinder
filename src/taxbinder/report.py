@@ -95,14 +95,14 @@ class YearStatus:
         return Counter(f.severity for group in self.findings.values() for f in group)
 
 
-def _deadline(year_config: YearConfig, year: int, form: str = "1040") -> date | None:
+def _deadline(year_config: YearConfig, year: int, form: str, extended: bool) -> date | None:
     if "filing" in year_config.deadlines:
         return year_config.deadlines["filing"]
     try:
         params = load_params(year, form)
     except ValueError:  # no params file for this year
         return None
-    key = "extended_deadline" if year_config.extension_filed else "deadline"
+    key = "extended_deadline" if extended else "deadline"
     return params.values.get("R-EXP-01", {}).get(key)
 
 
@@ -121,7 +121,10 @@ def year_status(store: RecordStore, year: int, today: date) -> YearStatus:
         reviewed = load_params(year, form).reviewed
     except ValueError:  # no params file for this year: it isn't checked
         reviewed, checked = False, False
-    status = YearStatus(year, today, _deadline(year_config, year, form), params_reviewed=reviewed)
+    from taxbinder.returns import extended
+
+    deadline = _deadline(year_config, year, form, extended(year_config, store.list("document")))
+    status = YearStatus(year, today, deadline, params_reviewed=reviewed)
     status.checked = checked
     status.checks_start = next(iter(checked_years(form)), None)
 
