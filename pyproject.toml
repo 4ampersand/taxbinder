@@ -1,6 +1,6 @@
 [project]
 name = "taxbinder"
-version = "0.10.0"
+version = "0.11.0"
 description = "Track, collect and reconcile tax documents (macOS desktop app)."
 license = "AGPL-3.0-or-later"
 authors = [{ name = "Shahid Ahmed", email = "shahid@4ampersand.com" }]

@@ -1,6 +1,6 @@
 [package]
 name = "taxbinder-desktop"
-version = "0.10.0"
+version = "0.11.0"
 description = "TaxBinder: Tauri shell + Python sidecar"
 edition = "2021"
 
