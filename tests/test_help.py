@@ -43,7 +43,7 @@ def test_the_privacy_statement_and_about(state: AppState) -> None:  # noqa: F811
     html = client(state).get("/help").text
     for part in ("Not tax advice", "What's stored where", "<h3>Encrypted</h3>",
                  "<h3>Not encrypted</h3>", "What goes over the network", "Home sharing",
-                 "GNU Affero General Public License", "doesn't check for them yet"):  # fmt: skip
+                 "GNU Affero General Public License", "at most once a day, it asks GitHub"):  # fmt: skip
         assert part in html, part
     assert str(state.vault_path) in html and 'class="help-pop"' not in html
     assert set(NAMED) == ENCRYPTED_FIELDS  # a new encrypted field: say so in the statement

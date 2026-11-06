@@ -55,9 +55,19 @@
   {% endif %}
 </section>{% endif %}
 
-<section class="card">
+<section class="card" id="about">
   <h2>About</h2>
   <p>TaxBinder {{ app_version }}. Free software under the GNU Affero General Public License v3.</p>
+  {% if not remote and not demo %}
+  {% if updates.newer %}<p class="row"><b>TaxBinder {{ updates.newer }} is available.</b> <button type="button" class="small act-update-download">Download</button></p>
+  <p class="muted small-text">The download page opens in your browser. Open the downloaded file and drag TaxBinder into Applications, as the first time; your binder stays as it is.</p>
+  {% elif updates.checked %}<p class="muted small-text">This is the latest version.</p>{% endif %}
+  <div class="setting">
+    <div><b>Check for updates</b><p class="muted small-text">When TaxBinder opens, at most once a day, it asks GitHub which version is the latest. Nothing about you or your documents is sent.</p></div>
+    <select class="select act-update-check" aria-label="Check for updates"><option value="on"{{ ' selected' if updates.check }}>On</option><option value="off"{{ ' selected' if not updates.check }}>Off</option></select>
+  </div>
+  <p><button type="button" class="secondary small act-update-now">Check now</button></p>
+  {% endif %}
   <p>TaxBinder keeps your tax documents in order. It isn't tax advice; your preparer is the one to ask.</p>
   <p class="links"><a href="/help#privacy">What's stored where, and what goes over the network</a> · <a href="/help#where">Where your data is</a> · <a href="/help#about">Licences</a></p>
   <p class="muted small-text">Vault: <code>{{ vault }}</code></p>

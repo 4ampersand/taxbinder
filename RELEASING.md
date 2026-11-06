@@ -45,7 +45,8 @@ For the maintainer. A release is a signed, notarized `TaxBinder.app` and
      build/release/reading_models.json.sig --title "TaxBinder <version>" --notes "…"
    ```
    The download page's button links to the latest release's `TaxBinder.dmg`, so it needs no
-   change.
+   change. The app reads the new version from the latest release's tag (`updates.py`), so
+   copies already installed say a newer one is out within a day.
 
 ## The download page
 

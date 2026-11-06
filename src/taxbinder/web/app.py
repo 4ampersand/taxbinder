@@ -33,6 +33,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 from importlib import resources
+from importlib.metadata import version
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote, unquote, urlsplit
@@ -69,6 +70,7 @@ from taxbinder import (
     safe,
     settings,
     states,
+    updates,
     viewer,
     whose,
 )
@@ -123,6 +125,8 @@ LOCAL_ONLY = {  # never from a paired device: they drive this Mac or manage shar
     "/api/pairing",
     "/api/devices/revoke",
     "/api/open-portal",
+    "/api/updates",  # asks GitHub from this Mac, or opens its browser
+    "/api/updates/download",
     "/api/capture-page",
     "/api/print",  # the print panel opens on this Mac
     "/api/documents/save",  # writes into this Mac's Downloads folder
@@ -226,6 +230,11 @@ class AppState:
         from taxbinder import llm
 
         return llm.folder(self.home_vault or self.vault_path)
+
+    @property
+    def updates_dir(self) -> Path:
+        """Where updates.json is kept: one per computer, beside the binder (updates.py)."""
+        return (self.home_vault or self.vault_path).parent
 
     def open(self) -> None:
         """Open the household's vault (if it isn't open), or note why not (the Start page offers
@@ -523,10 +532,17 @@ def create_app(state: AppState) -> FastAPI:
                     "upload_exts": UPLOAD_EXTS,
                     "sharing": state.sharing,
                     "demo": state.demo,
+                    "newer_version": newer_version(request),
                     **context,
                 },
                 status_code=status_code,
             )
+
+    def newer_version(request: Request) -> str | None:
+        """A newer TaxBinder seen by the last check (updates.py); never in the demo or remotely."""
+        if request.state.remote or state.demo:
+            return None
+        return updates.Updates.load(state.updates_dir).newer(version("taxbinder"))
 
     def need_store(request: Request) -> HTMLResponse | None:
         if state.current_store() is None:
@@ -914,7 +930,6 @@ def create_app(state: AppState) -> FastAPI:
     def help_page(request: Request) -> HTMLResponse:
         """Not tax advice, the privacy statement, About and the help topics;
         open before a vault too."""
-        from importlib.metadata import version
 
         listed = helptext.licences_file()
         return page(request, "help.html", app_version=version("taxbinder"),
@@ -2363,7 +2378,6 @@ def create_app(state: AppState) -> FastAPI:
     def settings_page(request: Request, year: int | None = None) -> HTMLResponse:
         if (blocked := need_store(request)) is not None:
             return blocked
-        from importlib.metadata import version
 
         from taxbinder.extract.figures import LABELS
 
@@ -2402,6 +2416,7 @@ def create_app(state: AppState) -> FastAPI:
             type_labels=DOC_LABELS,
             backup_info=info,
             app_version=version("taxbinder"),
+            updates=update_status(),
             inbox=state.vault_path / "inbox",
             reading=reading_status(),
         )
@@ -2501,6 +2516,40 @@ def create_app(state: AppState) -> FastAPI:
         except ValueError as e:
             return api_error(str(e), 400)
         return JSONResponse(reading_status())
+
+    # -- a newer TaxBinder (updates.py): told, never installed ---------------------
+
+    def update_status() -> dict[str, Any]:
+        u = updates.Updates.load(state.updates_dir)
+        return {"check": u.check, "newer": u.newer(version("taxbinder")),
+                "checked": u.checked > 0}  # fmt: skip
+
+    @app.post("/api/updates")
+    async def api_updates(request: Request) -> JSONResponse:
+        """{"check": "on"|"off"}: look when the app opens, or not; {"now": true}: look now."""
+        body = await request.json()
+        if state.demo:
+            return api_error("Updates aren't checked in the demo. Leave the demo first.", 400)
+        if "check" in body:
+            if body["check"] not in ("on", "off"):
+                return api_error("check is on or off", 400)
+            u = updates.Updates.load(state.updates_dir)
+            u.check = body["check"] == "on"
+            u.save(state.updates_dir)
+        if body.get("now"):
+            try:
+                await asyncio.to_thread(updates.look, state.updates_dir)
+            except OSError:
+                return api_error("TaxBinder couldn't reach GitHub. Try again when online.", 400)
+        return JSONResponse(update_status())
+
+    @app.post("/api/updates/download")
+    def api_updates_download() -> JSONResponse:
+        """The latest release's page, in the Mac's browser: the person downloads it there."""
+        if state.demo:
+            return api_error("Websites don't open in the demo. Leave the demo first.", 400)
+        state.open_url(updates.LATEST)
+        return JSONResponse({"requested": True}, status_code=202)
 
     @app.post("/api/reading/check")
     def api_reading_check() -> JSONResponse:

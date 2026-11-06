@@ -84,7 +84,8 @@ arrive, and a rule book that says what's missing, what disagrees and what needs 
 ## Not there yet
 
 - Windows and Intel Macs.
-- Signed, notarized downloads and automatic updates.
+- Updates that install themselves: TaxBinder says when there's a newer version, and you
+  download it.
 - Redacting scans and photos for an AI chat (reading them works).
 - Filers with fiscal or short tax years. Documents from fiscal-year partnerships are handled.
 - Reviewed estimated-payment dates for most states: the dates are there for every state and DC,

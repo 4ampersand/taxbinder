@@ -20,6 +20,7 @@
     {% include "_help.html" %}
   </div>
 </div>
+{% if newer_version %}<p class="muted small-text">TaxBinder {{ newer_version }} is available: <a href="/settings#about">Settings › About</a></p>{% endif %}
 {% include "_years.html" %}
 {% if not cards|selectattr('rows')|list %}
 <section class="panel">

@@ -212,7 +212,14 @@ the Excel file, saved documents, text copied for an AI chat).
 
 **Over the network**, only when you choose it: institution websites you open from TaxBinder;
 home sharing; printing; downloading an AI model (from Hugging Face; nothing about you is sent);
-and whatever you save and send yourself. TaxBinder doesn't check for updates yet.
+and whatever you save and send yourself. Also, when TaxBinder opens (at most once a day), it asks
+GitHub which version is the latest, with nothing about you; Settings › About turns that off.
+
+## Updating
+
+When there's a newer version, Your binder and **Settings › About** say so. **Download** opens its
+page in your browser: open the downloaded file and drag TaxBinder into Applications, replacing
+the old one. Your binders stay as they are. **Check now** asks straight away.
 
 ## Uninstalling
 

@@ -110,6 +110,11 @@ def main(argv: list[str] | None = None) -> int:
     state.model_reader.start()
     tins = threading.Thread(target=keep_issuer_tins, args=(state,), name="issuer-tins", daemon=True)
     tins.start()
+    if state.in_app:  # the app, not a terminal run: a newer TaxBinder, once a day (updates.py)
+        from taxbinder import updates
+
+        threading.Thread(target=updates.at_launch, args=(state.updates_dir,), name="updates",
+                         daemon=True).start()  # fmt: skip
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(("127.0.0.1", args.port))

@@ -758,6 +758,19 @@
   document.querySelectorAll(".act-model-cancel").forEach((b) => b.addEventListener("click", async () => {
     await post("/api/reading/cancel", {});
   }));
+  document.querySelectorAll(".act-update-check").forEach((s) => s.addEventListener("change", async () => {
+    const r = await post("/api/updates", { check: s.value });
+    if (!r.ok) msg(await errorOf(r), "bad");
+  }));
+  document.querySelectorAll(".act-update-now").forEach((b) => b.addEventListener("click", async () => {
+    b.disabled = true;
+    const r = await post("/api/updates", { now: true });
+    if (r.ok) reload(); else { msg(await errorOf(r), "bad"); b.disabled = false; }
+  }));
+  document.querySelectorAll(".act-update-download").forEach((b) => b.addEventListener("click", async () => {
+    const r = await post("/api/updates/download", {});
+    if (!r.ok) msg(await errorOf(r), "bad");
+  }));
   document.querySelectorAll(".act-model-check").forEach((b) => b.addEventListener("click", async () => {
     b.disabled = true;
     const r = await post("/api/reading/check", {});
