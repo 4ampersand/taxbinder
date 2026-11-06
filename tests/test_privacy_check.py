@@ -195,6 +195,11 @@ def test_the_copyright_line_in_help(repo: Path, finders: list) -> None:
     help_page.mkdir(parents=True)
     commit(repo, {"src/taxbinder/web/templates/help.html": "Copyright 2026 Avery Quill\n"})
     assert check(repo, finders) == []
+    commit(repo, {"src/taxbinder/web/templates/help.html": "Copyright 2026 Avery Quill\nmore\n"})
+    assert check(repo, finders) == []  # nor in an earlier version of the page
+    commit(repo, {"t.py": "who = 'Avery Quill'\n"})
+    commit(repo, {"t.py": "who = 'someone'\n"})
+    assert {h.place.split(":")[0] for h in check(repo, finders)} == {"t.py"}  # elsewhere: a hit
 
 
 def test_source_names_but_not_generic_ones(repo: Path, finders: list) -> None:

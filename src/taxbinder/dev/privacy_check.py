@@ -169,7 +169,8 @@ def check(repo: Path, finders: list[Finder]) -> list[Hit]:
     for sha in blobs:
         path = paths[sha]
         if (text := _text(path, _git(repo, "cat-file", "blob", sha))) is not None:
-            hits += _search(text, f"{path}:{{line}} (earlier version {sha[:7]})", finders)
+            where = f"{path}:{{line}} (earlier version {sha[:7]})"
+            hits += _search(text, where, others if path in AUTHORSHIP else finders)
 
     log = _git(repo, "log", "--all", "--format=%H%x00%an <%ae>%x00%cn <%ce>%x00%B%x1e").decode()
     for entry in log.split("\x1e"):

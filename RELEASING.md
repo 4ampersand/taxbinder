@@ -21,7 +21,8 @@ For the maintainer. A release is a signed, notarized `TaxBinder.app` and
    public repository, not only for releases.
 2. **Raise the version** in `pyproject.toml`, `desktop/package.json`,
    `desktop/src-tauri/tauri.conf.json` and `desktop/src-tauri/Cargo.toml` (the same number in
-   all four).
+   all four), and add one to the build number, `bundle.macOS.bundleVersion` in
+   `tauri.conf.json` (About TaxBinder shows it in brackets: "Version 0.11.0 (2)").
 3. **The vault format.** If a record's shape or the vault layout changed since the last
    release, the fixture, `FORMAT` and the upgrade step must already be in (see
    [CONTRIBUTING.md](CONTRIBUTING.md#changing-a-records-shape)).

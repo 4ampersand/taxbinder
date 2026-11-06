@@ -27,6 +27,13 @@ def test_one_version_everywhere() -> None:
     assert py == cargo == tauri == npm == release.version()
 
 
+def test_a_build_number_for_about() -> None:
+    """macOS's About window shows the build in brackets; without one it repeats the version."""
+    conf = json.loads((DESKTOP / "src-tauri" / "tauri.conf.json").read_text())
+    build = conf["bundle"]["macOS"]["bundleVersion"]
+    assert build.isdigit() and int(build) >= 1
+
+
 def test_the_backend_is_a_bundled_folder_under_the_hardened_runtime() -> None:
     conf = json.loads((DESKTOP / "src-tauri" / "tauri.conf.json").read_text())
     assert (
