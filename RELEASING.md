@@ -1,7 +1,7 @@
 # Releasing TaxBinder
 
 For the maintainer. A release is a signed, notarized `TaxBinder.app` and
-`TaxBinder-<version>.dmg`, published on the repository's GitHub releases.
+`TaxBinder.dmg`, published on the repository's GitHub releases.
 
 ## Once, on the release Mac
 
@@ -36,7 +36,22 @@ For the maintainer. A release is a signed, notarized `TaxBinder.app` and
    before building if the certificate or the notarization profile is missing.
 7. **Try it** on a Mac account that has never run TaxBinder: it opens with no warning, Get
    started and the demo work, and an existing vault from the previous version opens.
-8. **Publish** the `.dmg` as a GitHub release, tagged `v<version>`.
+8. **Publish** a GitHub release, tagged `v<version>`, with the `.dmg` and the reading models'
+   list (a full release, not a pre-release: GitHub's "latest" skips pre-releases):
+   ```bash
+   cp src/taxbinder/reading_models.json build/release/
+   uv run python -m taxbinder.dev.model_list sign build/release/reading_models.json
+   gh release create v<version> build/release/TaxBinder.dmg build/release/reading_models.json \
+     build/release/reading_models.json.sig --title "TaxBinder <version>" --notes "…"
+   ```
+   The download page's button links to the latest release's `TaxBinder.dmg`, so it needs no
+   change.
+
+## The download page
+
+`site/` is the page at https://4ampersand.github.io/taxbinder: static, published by
+`.github/workflows/pages.yml` whenever `site/` changes on main (Settings › Pages › Source: GitHub
+Actions). Its screenshot is the invented household's.
 
 ## A newer list of reading models
 

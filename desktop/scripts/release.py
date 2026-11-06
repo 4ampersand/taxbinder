@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""A release build: TaxBinder.app and TaxBinder-<version>.dmg, signed with the maintainer's
+"""A release build: TaxBinder.app and TaxBinder.dmg, signed with the maintainer's
 Developer ID, the hardened runtime, notarized by Apple and stapled, in build/release/.
 
     make release            (uv run python desktop/scripts/release.py)
@@ -106,7 +106,7 @@ def main() -> int:
     notarize(archive)
     archive.unlink()
     run("xcrun", "stapler", "staple", str(app))
-    dmg = OUT / f"TaxBinder-{version()}.dmg"
+    dmg = OUT / "TaxBinder.dmg"  # the download page links to this name
     dmg.unlink(missing_ok=True)
     run("hdiutil", "create", "-volname", "TaxBinder", "-srcfolder", str(app), "-ov", "-format",
         "UDZO", str(dmg))  # fmt: skip

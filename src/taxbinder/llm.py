@@ -35,8 +35,8 @@ from typing import Any
 log = logging.getLogger(__name__)
 
 BUILT_IN = Path(__file__).with_name("reading_models.json")
-# 4Ampersand's key for newer model lists (Ed25519, hex); set when the maintainer makes it
-PUBLIC_KEY: str | None = None
+# 4Ampersand's key for newer model lists (Ed25519, hex); the private half: the maintainer's Keychain
+PUBLIC_KEY: str | None = "3164bc1929c5852a72e85a9890af857a5fcf8e13e1921df0d0f389ea19c23f15"
 UPDATE_URL = "https://github.com/4ampersand/taxbinder/releases/latest/download/reading_models.json"
 ALLOWED = {"huggingface.co"}  # where a model file's address may point (then its CDN)
 MIN_MEMORY_GB = 16  # less: the app works without the model, and says so
